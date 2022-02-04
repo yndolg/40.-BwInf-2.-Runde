@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -g -march=sandybridge -mtune=sandybridge")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=sandybridge -mtune=sandybridge")
 add_executable(stapel main.cpp)
 
 FIND_PACKAGE( Boost 1.40 REQUIRED)

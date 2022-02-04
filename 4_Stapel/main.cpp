@@ -3,6 +3,7 @@
 //
 
 #include <fstream>
+#include <utility>
 #include <vector>
 #include <iostream>
 #include <numeric>
@@ -13,6 +14,7 @@
 #include <omp.h>
 #include <set>
 #include <random>
+#include <bitset>
 
 #include "boost/math/special_functions/binomial.hpp"
 #include <stack>
@@ -21,68 +23,6 @@ using namespace std;
 int n, k, m;
 int K;
 
-thread_local static float progress = 0;
-thread_local chrono::steady_clock::time_point last_progress;
-static long long total_progress;
-long long total;
-chrono::steady_clock::time_point starting_time;
-vector<int> row_of_var;
-vector<vector<char>> matrix;
-vector<vector<int>> ones_in_row;
-vector<vector<int>> ones_of_var;
-
-vector<int> order;
-vector<vector<unsigned char>> results;
-/*
-// takes in the matrix and produces a permutation, that still puts the variables in a correct order, based on their
-// dependencies, but hopefully in a way, that is faster to compute
-// To be specific: it greedily always selects the variable that is still most dependet on, essentially like a
-// topological sort
-vector<int> calculateOptimalOrdering(){
-    vector<int> result;
-    set<int> variables_left;
-    int n_vars = matrix[0].size() -1; // It was an extended coefficient matrix
-    for(int i = 0; i < n_vars; i++)
-        variables_left.insert(i);
-    while(!variables_left.empty()){
-        vector<int> depends_on(n_vars, 0);
-        vector<int> depended_by(n_vars, 0);
-        for(int var : variables_left){
-            if(row_of_var[var] < 0)
-                continue; // You don't depend on anything
-            for(int i = 0; i < n_vars; i++){
-                if(matrix[row_of_var[var]][i]){
-                    // if the dependency has not yet been assigned
-                    if(variables_left.find(i) != variables_left.end()){
-                        // You can't depend on yourself
-                        if(var != i){
-                            depends_on[var] += 1;
-                            depended_by[i] += 1;
-                        }
-                    }
-                }
-            }
-        }
-
-        int candidate = -1;
-        int candidate_dependencies = -1;
-        for(int var: variables_left){
-            // If it is still depends on some other variable, don't assign it yet
-            if(depends_on[var] == 0){
-                if(depended_by[var] > candidate_dependencies){
-                    candidate_dependencies = depended_by[var];
-                    candidate = var;
-                }
-            }
-        }
-        if(candidate < 0){
-            cout << "Error: the dependencies were cyclic. This should not have happened.\n";
-        }
-        result.push_back(candidate);
-        variables_left.erase(candidate);
-    }
-    return result;
-}*/
 
 // takes a square (not augmented!) matrix in, that has previously been reduced by Gauss elimination
 void resubIteratively2(vector<vector<int>> matrix){
@@ -96,7 +36,7 @@ void resubIteratively2(vector<vector<int>> matrix){
 
     }
 }
-void resubIteratively(int var, vector<int> solution, int c) {
+void resubIteratively(int var, vector<int> solution, int c, vector<int> row_of_var, vector<vector<int>> ones_of_var) {
     struct stack_frame {
         int pos;
         int count;
@@ -107,15 +47,11 @@ void resubIteratively(int var, vector<int> solution, int c) {
     m_stack.push({var, c,false});
     int progress = 0;
     while (!m_stack.empty()) {
-        /*progress++;
-        if(progress % 10000000 == 0){
-            cout << "Progress: " << progress << "\n";
-        }*/
         auto task = m_stack.top();
         m_stack.pop();
 
         if(task.pos < solution.size()-1)
-            solution[order[task.pos+1]] = task.prev_value;
+            solution[task.pos+1] = task.prev_value;
 
         if (task.pos < 0) {
             cout << "Solution: ";
@@ -127,11 +63,11 @@ void resubIteratively(int var, vector<int> solution, int c) {
             continue; // This was a solution, a leaf node without any children
         }
 
-        if (row_of_var[order[task.pos]] >= 0) {
+        if (row_of_var[task.pos] >= 0) {
             // this is a determined variable
             bool v = false;
-            for (const auto pos: ones_of_var[order[task.pos]]) {
-                v = v ^ solution[order[pos]];
+            for (const auto pos: ones_of_var[task.pos]) {
+                v = v ^ solution[pos];
             }
             if (task.count - v >= 0) {
                 m_stack.push({task.pos - 1,task.count - v, v});
@@ -146,106 +82,148 @@ void resubIteratively(int var, vector<int> solution, int c) {
         }
     }
 }
+vector<int> get_true_positions(const vector<int>& v){
+    vector<int> r;
+    for(int i = 0; i < v.size(); i++){
+        if(v[i])
+            r.push_back(i);
+    }
+    return r;
+}
 
-void resub(int var, vector<unsigned char> &solution, int c) {
-    while (row_of_var[var] >= 0 && c >= 0 && var >= 0 && c <= var + 1) {
-        bool v = 0;
-        for (const auto pos: ones_of_var[var]) {
-            v = v ^ solution[pos];
+class RecursiveSubstitution{
+    long long progress = 0;
+    chrono::steady_clock::time_point last_progress;
+
+    static long long total_progress;
+    double total;
+    chrono::steady_clock::time_point starting_time;
+    vector<int> row_of_var;
+    vector<vector<int>> matrix;
+    vector<vector<int>> ones_in_row;
+    vector<vector<int>> ones_of_var;
+    vector<vector<int>> results;
+
+    void resub_using_bitsets(int var, std::bitset<256> current_solution, int c){
+
+    }
+
+    void resub(int var, vector<int>& solution, int c) {
+        while (row_of_var[var] >= 0 && c >= 0 && var >= 0 && c <= var + 1) {
+            bool v = false;
+            for (const auto pos: ones_of_var[var]) {
+                v = v ^ solution[pos];
+            }
+            solution[var] = v;
+
+            c -= v;
+            var--;
+        }
+        if (c > var + 1) {
+            return; //There is no hope left, we can stop trying.
+        }
+        if (c < 0) {
+            return;
         }
 
-        solution[var] = v;
-
-
-        c -= v;
-        var--;
-        if (var + 1 >= c && var + 1 >= 0 && c >= 0) {
-            //progress += boost::math::binomial_coefficient<float>(var+1, c);
-        }
-
-    }
-    if (c > var + 1) {
-        return; //There is no hope left, we can stop trying. And the Binomial-Coefficient would have been 0 anyways
-    }
-    if (c < 0) {
-        return;
-    }
-
-    if (var < 0) {
-#pragma omp critical
-        {
-            cout << "Found a solution!\n";
+        if (var < 0) {
+            cout << "Found a solution:";
+            for(const auto p: get_true_positions(solution)){
+                cout << " " << p;
+            }
+            cout << "\n";
             results.push_back(solution);
+            return;
         }
-        progress += 1;
-        return;
-    }
-
-
-    // Variable has no row
-    if (row_of_var[var] < 0) {
-        /*auto elapsed_time = chrono::duration_cast<chrono::milliseconds>(
-                chrono::steady_clock::now() - last_progress).count();
-        if (elapsed_time > 1000 ) {
-            last_progress = chrono::steady_clock::now();
-#pragma omp critical
-            {
-                auto elapsed_time = chrono::duration_cast<chrono::seconds>(
-                        chrono::steady_clock::now() - starting_time);
-                cout << "Progress: " << progress << " in " << elapsed_time.count() << "s << (Thread "
-                     << omp_get_thread_num() << ", " << (progress/boost::math::binomial_coefficient<double>(solution.size(), K+1))*100.0<<"%) \n";
+        // Variable has no row
+        if (row_of_var[var] < 0) {
+            progress += 1;
+            if(progress % (1 << 24) == 0){
+                cout << progress << "\n";
             }
-        }*/
-        if (var > solution.size() - 10 && c > K + (1 /
-                                                   2) /*boost::math::binomial_coefficient<double>(var+1, c) > 0.05*boost::math::binomial_coefficient<double>(solution.size(), K+1)*/ ) {
-            cout << "Starting two tasks...\n";
-#pragma omp task default(none) shared( var, c) firstprivate(solution)
-            {
-                solution[var] = 0;
-                resub(var - 1, solution, c);
-            }
-#pragma omp task default(none) shared(var, c) firstprivate(solution)
-            {
-
-                solution[var] = 1;
-                resub(var - 1, solution, c - 1);
-            }
-        } else {
             solution[var] = 0;
             resub(var - 1, solution, c);
             solution[var] = 1;
             resub(var - 1, solution, c - 1);
+            solution[var] = 0;
+            return;
+        }
+        cout << "This should never happen!\n";
+    }
+
+    vector<vector<int>> prepare(){
+        //Re-Substitution
+        int n_vars = matrix[0].size() - 1;
+        vector<int> solution(n_vars, 0);
+
+        row_of_var = vector<int>(n_vars, -1);
+        for (int i = 0; i < matrix.size(); i++) {
+            int j = 0;
+            while (matrix[i][j] != 1 && j < matrix[0].size()) {
+                j++;
+            }
+            if (matrix[i][j] == 1) {
+                row_of_var[j] = i;
+            }
         }
 
-        return;
+        int undetermined = count(row_of_var.begin(), row_of_var.end(), -1);
+        total = boost::math::binomial_coefficient<double>(undetermined, K);
+        starting_time = chrono::steady_clock::now();
+        cout << "Found " << undetermined << " undetermined variables, resulting in a search-space of " << total
+             << " elements. \n";
+
+        vector<vector<int>> r;
+
+        //precalculating some stuff
+        for (int row = 0; row < matrix.size(); row++) {
+            vector<int> ones;
+            int first_one = 0;
+            while (matrix[row][first_one] != 1)
+                first_one++;
+            for (int i = first_one + 1; i < matrix[row].size(); i++) {
+                if (matrix[row][i] == 1) {
+                    ones.push_back(i);
+                }
+            }
+            ones_in_row.push_back(ones);
+        }
+
+        ones_of_var = vector<vector<int>>(n_vars, vector<int>(0));
+        for (int var = 0; var < n_vars; var++) {
+            if (row_of_var[var] >= 0) {
+                ones_of_var[var] = ones_in_row[row_of_var[var]];
+            }
+        }
+        starting_time = chrono::steady_clock::now();
+        resub(n_vars - 1, solution, K + 1);
+
+        cout << "Finished resubstitution after " << chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now()- starting_time).count()/1000.0 << " seconds.\n";
+        for (const auto &s: results) {
+            r.push_back(get_true_positions(s));
+        }
+        return r;
+    }
+
+public:
+    vector<vector<int>> solve(vector<vector<int>> mat){
+        matrix = std::move(mat);
+        return prepare();
 
     }
-    cout << "This should never happen!\n";
-}
+};
 
-vector<vector<char>> gauss(vector<vector<char>> matrix) {
+vector<vector<int>> gauss(vector<vector<int>> matrix) {
     int h = 0;
     int k = 0;
     while (h < matrix.size() && k < matrix[0].size()) {
         int i_max = h;
-        int min_ones = 1000000000;
-        int min_row = -1;
-        for(int i = h; i < matrix.size(); i++){
-            if(matrix[i][k] != 0){
-                int ones_in_row = std::count(matrix[i].begin(), matrix[i].end(), 1);
-                if(ones_in_row < min_ones){
-                    min_ones = ones_in_row;
-                    min_row = i;
-                }
-            }
-        }
-        /*while (i_max < matrix.size() && matrix[i_max][k] == 0) {
+        while (i_max < matrix.size() && matrix[i_max][k] == 0) {
             i_max += 1;
-        }*/
-        if (min_row < 0) {
+        }
+        if (i_max == matrix.size()) {
             k++;
         } else {
-            i_max = min_row;
             swap(matrix[h], matrix[i_max]);
             for (int i = h + 1; i < matrix.size(); i++) {
                 int f = matrix[i][k] / matrix[h][k];
@@ -257,74 +235,30 @@ vector<vector<char>> gauss(vector<vector<char>> matrix) {
             k++;
         }
     }
+
+    // remove all zero-lines
+    matrix.erase(std::remove_if(matrix.begin(), matrix.end(), [](auto el){
+        return std::count(el.begin(), el.end(), 1) == 0;
+    }), matrix.end());
+
+
+    // bring into reduced echelon form
+    for(int row = matrix.size() - 1; row >= 0; row--){
+        // this should work, as every line has a one (because all the others were removed before)
+        auto leading_one = std::distance(matrix[row].begin(), std::find(matrix[row].begin(), matrix[row].end(), 1));
+        // diese Reihe von allen darüberliegenden Reihen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
+        for(int i = 0; i < row; i++){
+            if(matrix[i][leading_one]){
+                // Row_i = Row_i ^ Row_row
+                std::transform(matrix[i].begin(), matrix[i].end(), matrix[row].begin(), matrix[i].begin(), std::bit_xor<>());
+            }
+        }
+    }
     return matrix;
 }
 
-vector<vector<int>> solve(){
-    //Re-Substitution
-    int n_vars = matrix[0].size() - 1;
-    vector<int> solution(n_vars, 0);
 
-    row_of_var = vector<int>(n_vars, -1);
-    for (int i = 0; i < matrix.size(); i++) {
-        int j = 0;
-        while (matrix[i][j] != 1 && j < matrix[0].size()) {
-            j++;
-        }
-        if (matrix[i][j] == 1) {
-            row_of_var[j] = i;
-        }
-    }
-
-    int undetermined = count(row_of_var.begin(), row_of_var.end(), -1);
-    total = pow(2, undetermined);
-    starting_time = chrono::steady_clock::now();
-    cout << "Found " << undetermined << " undetermined variables, resulting in a search-space of " << total
-         << " elements. \n";
-
-    vector<vector<int>> r;
-
-    //precalculating some stuff
-    for (int row = 0; row < matrix.size(); row++) {
-        vector<int> ones;
-        int first_one = 0;
-        while (matrix[row][first_one] != 1)
-            first_one++;
-        for (int i = first_one + 1; i < matrix[row].size(); i++) {
-            if (matrix[row][i] == 1) {
-                ones.push_back(i);
-            }
-        }
-        ones_in_row.push_back(ones);
-    }
-
-    ones_of_var = vector<vector<int>>(n_vars, vector<int>(0));
-    for (int var = 0; var < n_vars; var++) {
-        if (row_of_var[var] >= 0) {
-            ones_of_var[var] = ones_in_row[row_of_var[var]];
-        }
-    }
-    resubIteratively(n_vars - 1, solution, K + 1);
-    omp_set_nested(1);
-    omp_set_num_threads(8);
-    /*
-#pragma omp parallel default(none) shared(n_vars, solution, K)
-    {
-#pragma omp single
-        resub(n_vars - 1, solution, K + 1);
-    }
-
-*/    for (const auto &s: results) {
-        vector<int> v;
-        for (int i = 0; i < s.size(); i++) {
-            if (s[i] == 1)
-                v.push_back(i);
-        }
-        r.push_back(v);
-    }
-    return r;
-}
-int countOnesInMatrix(vector<vector<char>> matrix){
+int countOnesInMatrix(vector<vector<int>> matrix){
     int c = 0;
     for(const auto& row: matrix){
         for(const auto& v: row){
@@ -332,6 +266,14 @@ int countOnesInMatrix(vector<vector<char>> matrix){
         }
     }
     return c;
+}
+void print_matrix(const vector<vector<int>>& matrix){
+    for(const auto& row: matrix){
+        for(const auto el: row){
+            cout << el << " ";
+        }
+        cout << "\n";
+    }
 }
 
 int main() {
@@ -354,9 +296,9 @@ int main() {
         }
         cards.push_back(card);
     }
-
+    vector<vector<int>> matrix;
     for (int bit = 0; bit < cards[0].size(); bit++) {
-        vector<char> equation;
+        vector<int> equation;
         equation.reserve(cards.size());
         for (auto &card: cards) {
             equation.push_back(card[bit]);
@@ -365,20 +307,16 @@ int main() {
         matrix.push_back(equation);
     }
 
-    cout << "The input matrix had " << countOnesInMatrix(matrix) << " ones.\n";
-    auto result = gauss(matrix);
-    cout << "After running it through gaussian elimination, it had " << countOnesInMatrix(result) << " ones left.\n";
-    int min = 1000000000;
-    std::mt19937 rng;
-    for(int i = 0; i < 10; i++){
-        auto matrix_copy = matrix;
-        std::shuffle(matrix_copy.begin(), matrix_copy.end(), rng);
-        auto result = gauss(matrix_copy);
-        min = std::min(min, countOnesInMatrix(result));
-    }
-    cout << "After running it through gaussian elimination for 10 times, it had " << min << " ones left. \n";
+
+    vector<vector<int>> result = gauss(matrix);
     matrix = gauss(matrix);
-    auto solutions = solve();
+    cout << "The matrix after gaussian elimination: (with " << countOnesInMatrix(matrix) << " ones)\n";
+    print_matrix(matrix);
+
+
+    RecursiveSubstitution s;
+    auto solutions = s.solve(matrix);
+
     for (const auto &solution: solutions) {
         cout << "Solution:";
         for (const auto &v: solution) {
