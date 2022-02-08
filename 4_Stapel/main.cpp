@@ -23,66 +23,12 @@ using namespace std;
 int n, k, m;
 int K;
 
-
-// takes a square (not augmented!) matrix in, that has previously been reduced by Gauss elimination
-void resubIteratively2(vector<vector<int>> matrix){
-    struct stack_frame{
-        vector<int> determined_vars;
-    };
-    stack<struct stack_frame, vector<struct stack_frame>> m_stack;
-    while(!m_stack.empty()){
-        auto task = m_stack.top();
-        m_stack.pop();
-
-    }
-}
-void resubIteratively(int var, vector<int> solution, int c, vector<int> row_of_var, vector<vector<int>> ones_of_var) {
-    struct stack_frame {
-        int pos;
-        int count;
-        bool prev_value;
-    };
-
-    std::stack<struct stack_frame, vector<struct stack_frame>> m_stack; // var, c, pos
-    m_stack.push({var, c,false});
-    int progress = 0;
-    while (!m_stack.empty()) {
-        auto task = m_stack.top();
-        m_stack.pop();
-
-        if(task.pos < solution.size()-1)
-            solution[task.pos+1] = task.prev_value;
-
-        if (task.pos < 0) {
-            cout << "Solution: ";
-            for (int i = 0; i < solution.size(); i++) {
-                if(solution[i])
-                    cout << " " << (int) i;
-            }
-            cout << "\n";
-            continue; // This was a solution, a leaf node without any children
-        }
-
-        if (row_of_var[task.pos] >= 0) {
-            // this is a determined variable
-            bool v = false;
-            for (const auto pos: ones_of_var[task.pos]) {
-                v = v ^ solution[pos];
-            }
-            if (task.count - v >= 0) {
-                m_stack.push({task.pos - 1,task.count - v, v});
-            }
-        } else {
-            // this is a free variable
-            for (bool i: {true, false}) {
-                if (task.count - i >= 0) {
-                    m_stack.push({task.pos - 1, task.count - i, i});
-                }
-            }
-        }
-    }
-}
-vector<int> get_true_positions(const vector<int>& v){
+/*
+ * Ideen: - in standard-form umwandeln und nur die relevanten teile des Arrays speichern
+ *        - Bitsets verwenden
+ */
+template <typename T>
+vector<int> get_true_positions(const T& v){
     vector<int> r;
     for(int i = 0; i < v.size(); i++){
         if(v[i])
@@ -91,8 +37,8 @@ vector<int> get_true_positions(const vector<int>& v){
     return r;
 }
 
+template<int size>
 class RecursiveSubstitution{
-    long long progress = 0;
     chrono::steady_clock::time_point last_progress;
 
     static long long total_progress;
@@ -100,28 +46,81 @@ class RecursiveSubstitution{
     chrono::steady_clock::time_point starting_time;
     vector<int> row_of_var;
     vector<vector<int>> matrix;
+
+    vector<bitset<size>> bit_matrix;
+
     vector<vector<int>> ones_in_row;
     vector<vector<int>> ones_of_var;
-    vector<vector<int>> results;
+    vector<bitset<size>> results;
+    int n_vars;
 
-    void resub_using_bitsets(int var, std::bitset<256> current_solution, int c){
+    void resubIteratively(){
+        struct stack_frame{
+            bitset<size> solution;
+            int var;
+            int c;
+        };
+        std::stack<struct stack_frame, vector<struct stack_frame>> stack;
+        stack.push(stack_frame{bitset<size>(), n_vars - 1, K+1});
+        while(!stack.empty()){
+            auto frame = stack.top();
+            stack.pop();
 
+            while (row_of_var[frame.var] >= 0 && frame.c >= 0 && frame.var >= 0 && frame.c <= frame.var + 1) {
+                bool v = (bit_matrix[row_of_var[frame.var]] & frame.solution).count() % 2;
+                frame.solution[frame.var] = v;
+                frame.c -= v;
+                frame.var--;
+            }
+
+            if (frame.c > frame.var + 1) {
+                continue; //There is no hope left, we can stop trying.
+            }
+
+            if (frame.c < 0) {
+                continue;
+            }
+
+            if (frame.var < 0) {
+                cout << "Found a solution:";
+                for(const auto p: get_true_positions(frame.solution)){
+                    cout << " " << p;
+                }
+                cout << "\n";
+                results.push_back(frame.solution);
+                continue;
+            }
+            // Variable has no row
+            if (row_of_var[frame.var] < 0) {
+                thread_local static long long progress;
+                progress += 1;
+                if(progress % (1 << 24) == 0){
+                    cout << progress << "\n";
+                }
+                frame.solution[frame.var] = 0;
+                //resub(var - 1, solution, c);
+                stack.push({frame.solution, frame.var -1, frame.c});
+                frame.solution[frame.var] = 1;
+                //resub(var - 1, solution, c - 1);
+                stack.push({frame.solution, frame.var -1 , frame.c - 1});
+                continue;
+            }
+
+        }
     }
 
-    void resub(int var, vector<int>& solution, int c) {
+    void resub(int var, std::bitset<size>& solution, int c) {
         while (row_of_var[var] >= 0 && c >= 0 && var >= 0 && c <= var + 1) {
-            bool v = false;
-            for (const auto pos: ones_of_var[var]) {
-                v = v ^ solution[pos];
-            }
+            bool v = (bit_matrix[row_of_var[var]] & solution).count() % 2;
             solution[var] = v;
-
             c -= v;
             var--;
         }
+
         if (c > var + 1) {
             return; //There is no hope left, we can stop trying.
         }
+
         if (c < 0) {
             return;
         }
@@ -137,15 +136,30 @@ class RecursiveSubstitution{
         }
         // Variable has no row
         if (row_of_var[var] < 0) {
+            thread_local static long long progress;
             progress += 1;
-            if(progress % (1 << 24) == 0){
-                cout << progress << "\n";
+            if(progress % (1 << 25) == 0){
+                cout << "Thread " << omp_get_thread_num() << ": " << progress << "\n";
             }
-            solution[var] = 0;
-            resub(var - 1, solution, c);
-            solution[var] = 1;
-            resub(var - 1, solution, c - 1);
-            solution[var] = 0;
+            if(var > 50 & c > 2){
+#pragma omp task default(none) shared(var, c) firstprivate(solution)
+                {
+                    solution[var] = 0;
+                    resub(var - 1, solution, c);
+                }
+#pragma omp task default(none) shared(var, c) firstprivate(solution)
+                {
+                    solution[var] = 1;
+                    resub(var - 1, solution, c - 1);
+                }
+            }else{
+                auto mysolution = solution;
+                mysolution[var] = 0;
+                resub(var - 1, mysolution, c);
+                mysolution[var] = 1;
+                resub(var - 1, mysolution, c - 1);
+            }
+
             return;
         }
         cout << "This should never happen!\n";
@@ -153,8 +167,15 @@ class RecursiveSubstitution{
 
     vector<vector<int>> prepare(){
         //Re-Substitution
-        int n_vars = matrix[0].size() - 1;
-        vector<int> solution(n_vars, 0);
+        n_vars = matrix[0].size() - 1;
+        for(const auto& row: matrix){
+            bitset<size> bitset;
+            for(int i = 0; i < row.size(); i++)
+                bitset[i] = row[i];
+            bit_matrix.push_back(bitset);
+        }
+
+        bitset<size> solution(0);
 
         row_of_var = vector<int>(n_vars, -1);
         for (int i = 0; i < matrix.size(); i++) {
@@ -168,7 +189,7 @@ class RecursiveSubstitution{
         }
 
         int undetermined = count(row_of_var.begin(), row_of_var.end(), -1);
-        total = boost::math::binomial_coefficient<double>(undetermined, K);
+        total = 1;// boost::math::binomial_coefficient<double>(undetermined, K);
         starting_time = chrono::steady_clock::now();
         cout << "Found " << undetermined << " undetermined variables, resulting in a search-space of " << total
              << " elements. \n";
@@ -196,7 +217,11 @@ class RecursiveSubstitution{
             }
         }
         starting_time = chrono::steady_clock::now();
-        resub(n_vars - 1, solution, K + 1);
+
+        #pragma omp parallel default(none) shared(solution, K)
+        #pragma omp single
+        resub(n_vars - 1 , solution, K + 1);
+
 
         cout << "Finished resubstitution after " << chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now()- starting_time).count()/1000.0 << " seconds.\n";
         for (const auto &s: results) {
@@ -307,14 +332,14 @@ int main() {
         matrix.push_back(equation);
     }
 
-
+    omp_set_num_threads(8);
     vector<vector<int>> result = gauss(matrix);
     matrix = gauss(matrix);
     cout << "The matrix after gaussian elimination: (with " << countOnesInMatrix(matrix) << " ones)\n";
     print_matrix(matrix);
 
 
-    RecursiveSubstitution s;
+    RecursiveSubstitution<256> s;
     auto solutions = s.solve(matrix);
 
     for (const auto &solution: solutions) {
