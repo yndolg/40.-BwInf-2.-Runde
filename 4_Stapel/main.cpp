@@ -15,6 +15,7 @@
 #include <set>
 #include <random>
 #include <bitset>
+#include <unordered_set>
 
 #include "boost/math/special_functions/binomial.hpp"
 #include <stack>
@@ -38,6 +39,22 @@ vector<int> get_true_positions(const T& v){
 }
 
 template<int size>
+class MeetInTheMiddleSubstitution{
+    vector<bitset<size>> words;
+
+    bitset<size> current_word;
+            public:
+    MeetInTheMiddleSubstitution(const vector<vector<int>>& matrix){
+        for(int i = 0; i < matrix.size(); i++){
+
+        }
+    }
+    void solve(int next_var, int ones_left){
+
+    }
+};
+
+template<int size>
 class RecursiveSubstitution{
     chrono::steady_clock::time_point last_progress;
 
@@ -49,79 +66,42 @@ class RecursiveSubstitution{
 
     vector<bitset<size>> bit_matrix;
 
+    unordered_set<bitset<size>> cache;
+
     vector<vector<int>> ones_in_row;
     vector<vector<int>> ones_of_var;
     vector<bitset<size>> results;
     int n_vars;
 
-    void resubIteratively(){
-        struct stack_frame{
-            bitset<size> solution;
-            int var;
-            int c;
-        };
-        std::stack<struct stack_frame, vector<struct stack_frame>> stack;
-        stack.push(stack_frame{bitset<size>(), n_vars - 1, K+1});
-        while(!stack.empty()){
-            auto frame = stack.top();
-            stack.pop();
+    vector<bitset<size>> base_words;
+    int cache_hits;
 
-            while (row_of_var[frame.var] >= 0 && frame.c >= 0 && frame.var >= 0 && frame.c <= frame.var + 1) {
-                bool v = (bit_matrix[row_of_var[frame.var]] & frame.solution).count() % 2;
-                frame.solution[frame.var] = v;
-                frame.c -= v;
-                frame.var--;
-            }
+    void resub(int var, std::bitset<size>& solution, int c, bitset<size> current_word) {
 
-            if (frame.c > frame.var + 1) {
-                continue; //There is no hope left, we can stop trying.
-            }
-
-            if (frame.c < 0) {
-                continue;
-            }
-
-            if (frame.var < 0) {
-                cout << "Found a solution:";
-                for(const auto p: get_true_positions(frame.solution)){
-                    cout << " " << p;
-                }
-                cout << "\n";
-                results.push_back(frame.solution);
-                continue;
-            }
-            // Variable has no row
-            if (row_of_var[frame.var] < 0) {
-                thread_local static long long progress;
-                progress += 1;
-                if(progress % (1 << 24) == 0){
-                    cout << progress << "\n";
-                }
-                frame.solution[frame.var] = 0;
-                //resub(var - 1, solution, c);
-                stack.push({frame.solution, frame.var -1, frame.c});
-                frame.solution[frame.var] = 1;
-                //resub(var - 1, solution, c - 1);
-                stack.push({frame.solution, frame.var -1 , frame.c - 1});
-                continue;
-            }
-
+        if(cache.find(current_word) != cache.end()){
+            cache_hits++;
+            //cout << "Cache hit. Returning.\n";
+            return;
         }
-    }
 
-    void resub(int var, std::bitset<size>& solution, int c) {
         while (row_of_var[var] >= 0 && c >= 0 && var >= 0 && c <= var + 1) {
             bool v = (bit_matrix[row_of_var[var]] & solution).count() % 2;
             solution[var] = v;
+            if(v){
+                current_word ^= base_words[var];
+                cache.insert(current_word);
+            }
             c -= v;
             var--;
         }
 
         if (c > var + 1) {
+            cache.insert(current_word);
             return; //There is no hope left, we can stop trying.
         }
 
         if (c < 0) {
+            cache.insert(current_word);
             return;
         }
 
@@ -132,34 +112,23 @@ class RecursiveSubstitution{
             }
             cout << "\n";
             results.push_back(solution);
+            cache.insert(current_word);
             return;
         }
         // Variable has no row
         if (row_of_var[var] < 0) {
             thread_local static long long progress;
             progress += 1;
-            if(progress % (1 << 25) == 0){
-                cout << "Thread " << omp_get_thread_num() << ": " << progress << "\n";
+            if(progress % (1 << 20) == 0){
+                cout << "Thread " << omp_get_thread_num() << ": " << progress << " Cache: "<<cache_hits<<"\n";
             }
-            if(var > 50 & c > 2){
-#pragma omp task default(none) shared(var, c) firstprivate(solution)
-                {
-                    solution[var] = 0;
-                    resub(var - 1, solution, c);
-                }
-#pragma omp task default(none) shared(var, c) firstprivate(solution)
-                {
-                    solution[var] = 1;
-                    resub(var - 1, solution, c - 1);
-                }
-            }else{
-                auto mysolution = solution;
-                mysolution[var] = 0;
-                resub(var - 1, mysolution, c);
-                mysolution[var] = 1;
-                resub(var - 1, mysolution, c - 1);
-            }
+            auto mysolution = solution;
 
+            mysolution[var] = 0;
+            resub(var - 1, mysolution, c, current_word);
+            mysolution[var] = 1;
+            resub(var - 1, mysolution, c - 1, current_word ^ base_words[var]);
+            cache.insert(current_word);
             return;
         }
         cout << "This should never happen!\n";
@@ -218,9 +187,19 @@ class RecursiveSubstitution{
         }
         starting_time = chrono::steady_clock::now();
 
-        #pragma omp parallel default(none) shared(solution, K)
-        #pragma omp single
-        resub(n_vars - 1 , solution, K + 1);
+        for(int i = 0; i < matrix[0].size(); i++){
+            bitset<size> word;
+            word.reset();
+            for(int j = 0; j < matrix.size(); j++){
+                if(matrix[j][i])
+                    word.set(j, matrix[j][i]);
+            }
+            base_words.push_back(word);
+        }
+
+        /*#pragma omp parallel default(none) shared(solution, K)
+        #pragma omp single*/
+        resub(n_vars - 1 , solution, K + 1, bitset<size>());
 
 
         cout << "Finished resubstitution after " << chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now()- starting_time).count()/1000.0 << " seconds.\n";
@@ -303,7 +282,7 @@ void print_matrix(const vector<vector<int>>& matrix){
 
 int main() {
 
-    ifstream ifs("/media/data/schule/BWINF/40_2/4_Stapel/Eingabe/stapel4.txt");
+    ifstream ifs("/media/data/schule/BWINF/40_2/4_Stapel/Eingabe/stapel3.txt");
 
     ifs >> n;
     ifs >> k;
