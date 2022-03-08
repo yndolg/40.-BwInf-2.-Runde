@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -g -march=sandybridge -mtune=sandybridge")
-add_executable(stapel main.cpp)
+set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
+add_executable(stapel main.cpp Resubstitution.cpp Resubstitution.h MeetInTheMiddle.cpp MeetInTheMiddle.h)
 
 FIND_PACKAGE( Boost 1.40 REQUIRED)
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
