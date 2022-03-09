@@ -16,10 +16,14 @@ int INFINITY = numeric_limits<int>::max()/2;
 
 std::string DPSolver::solve(const std::string& string, int i) {
     word = string;
-    solution = "";
+    max_moves = i;
+
+    memo = vector<int>((string.size()+1) * (1+2*max_moves), -1);
+
     auto r = reconstruct(i);
     cout << "Cache rate: " << cacheHit  << "/" << (cacheMiss+cacheHit) <<"\n";
-    cout << "Cache size: " << memo.size() << "/" << 2 * i * string.size() << "\n";
+
+    //cout << "Cache size: " << memo.size() << "/" << 2 * i * string.size() << "\n";
     return r;
 }
 
@@ -117,16 +121,25 @@ std::string DPSolver::getMoves(std::string old, std::string next) {
 }
 
 int DPSolver::calcMemo(int pos,  int d) {
-    auto it = memo.find({pos,  d});
-    if(it != memo.end()){
+    // This can not lead anywhere, as it already uses to many moves
+    //  --> result does not even fit into cache
+    if(abs(d) > max_moves)
+        return INFINITY;
+
+    auto it = memo[memoKey({pos, d})];
+    if(it >= 0){
         cacheHit++;
-        return it->second;
+        return it;
     }
     cacheMiss++;
 
     auto r = calc(pos, d);
-    memo[{pos, d}] = r;
+    memo[memoKey({pos, d})] = r;
     return r;
+}
+
+int DPSolver::memoKey(DPSolver::memo_key m) const {
+    return (m.pos * (2*max_moves+1)) + m.d + max_moves;
 }
 
 bool DPSolver::memo_key::operator==(const DPSolver::memo_key &rhs) const  {
