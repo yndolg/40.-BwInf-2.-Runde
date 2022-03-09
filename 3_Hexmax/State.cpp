@@ -8,7 +8,6 @@
 #include "State.h"
 using namespace std;
 
-array<int, 16> table = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F, 0x77, 0x7C, 0x39, 0x5E, 0x79, 0x71};
 
 std::string State::visualize() const {
     std::array<std::string, 5> lines;
@@ -124,12 +123,7 @@ std::array<std::string, 5> State::visualize_char(std::bitset<7> c) {
 State State::fromString(const std::string& s) {
     State state;
     for(auto c: s){
-        int n;
-        if(c >= '0' && c <= '9')
-            n = c - '0';
-        if(c >= 'A' && c <= 'F')
-            n = 10 + (c- 'A');
-        state.positions.emplace_back(table[n]);
+        state.positions.emplace_back(digitFromChar(c));
     }
     return state;
 }
@@ -138,9 +132,9 @@ string State::toString() {
     std::string r;
     for(auto digit: positions){
         auto v = digit.to_ulong();
-        auto pos = std::find(table.begin(), table.end(), v);
-        if(pos != table.end()){
-            r.push_back("0123456789ABCDEF"[std::distance(table.begin(), pos)]);
+        auto pos = std::find(TABLE.begin(), TABLE.end(), v);
+        if(pos != TABLE.end()){
+            r.push_back("0123456789ABCDEF"[std::distance(TABLE.begin(), pos)]);
         }else{
             r.push_back('X');
         }
@@ -153,9 +147,9 @@ long long State::getValue() {
     for(auto digit: positions){
         v*=16;
         auto bits = digit.to_ulong();
-        auto pos = std::find(table.begin(), table.end(), bits);
-        if(pos != table.end()){
-            v += std::distance(table.begin(), pos);
+        auto pos = std::find(TABLE.begin(), TABLE.end(), bits);
+        if(pos != TABLE.end()){
+            v += std::distance(TABLE.begin(), pos);
         }else{
            return -1;
         }

@@ -6,7 +6,7 @@
 
 using namespace std;
 int main() {
-    std::ifstream ifs("../Eingabe/hexmax4.txt");
+    std::ifstream ifs("../Eingabe/hexmax5.txt");
     std::string s;
     ifs >> s;
     int c;

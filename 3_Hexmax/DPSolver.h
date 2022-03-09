@@ -9,12 +9,13 @@
 #include <bitset>
 #include <unordered_map>
 
+#include <unordered_set>
+
 #include "State.h"
 
 class DPSolver {
     struct memo_key{
         int pos;
-        int c;
         int d;
 
         bool operator==(const memo_key &rhs) const;
@@ -26,18 +27,19 @@ class DPSolver {
         std::size_t operator()(const memo_key& k) const{
             size_t hash = 5381;
             hash = ((hash << 5) + hash) + k.pos;
-            hash = ((hash << 5) + hash) + k.c;
             hash = ((hash << 5) + hash) + k.d;
             return hash;
         }
     };
 
 private:
-    std::string calc(int pos, int c, int d);
 
-    std::unordered_map<memo_key, std::string, memo_key_hash> memo;
+    std::string solution;
+    int calc(int pos, int surplus);
+    int calcMemo(int pos, int surplus);
 
-    std::string calcMemo(int pos, int c, int d);
+    std::unordered_map<memo_key, int,memo_key_hash> memo;
+
 
     static std::pair<int, int> difference(std::bitset<7> c1, std::bitset<7> c2);
     int cacheHit = 0;
@@ -45,10 +47,13 @@ private:
 
     std::string word;
 
+
 public:
     std::string solve(const std::string& string, int i);
 
     std::string getMoves(std::string old, std::string next);
+
+    std::string reconstruct(int max);
 };
 
 

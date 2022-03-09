@@ -8,65 +8,85 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <limits>
 
 using namespace std;
 
+int INFINITY = numeric_limits<int>::max()/2;
+
 std::string DPSolver::solve(const std::string& string, int i) {
     word = string;
-    auto r = calcMemo(0, i, 0);
+    solution = "";
+    auto r = reconstruct(i);
     cout << "Cache rate: " << cacheHit  << "/" << (cacheMiss+cacheHit) <<"\n";
+    cout << "Cache size: " << memo.size() << "/" << 2 * i * string.size() << "\n";
     return r;
 }
+
 const string HEX_DIGITS = "0123456789ABCDEF";
 
-std::string DPSolver::calc(int pos, int c, int surplus) {
-    if(c < 0)
-        return "X";
+std::string DPSolver::reconstruct(int max_moves){
+    int surplus = 0;
+    int pos = 0;
+    int moves_left = max_moves;
+    string s;
+    while(pos < word.size()){
+        for(int i = 15; i >= 0; i--){
+            auto r = difference(State::digitFromChar(word[pos]), State::digitFromChar(HEX_DIGITS[i]));
+            int added_moves = r.first;
+            int added_surplus = r.second;
 
+            int new_surplus = surplus + added_surplus;
+            int new_pos = pos + 1;
+
+            if(calcMemo(new_pos, new_surplus) + added_moves + max(0, added_surplus) <= moves_left){
+                surplus = new_surplus;
+                s += HEX_DIGITS[i];
+                pos = new_pos;
+                moves_left -= added_moves + max(0, added_surplus);
+                break;
+            }
+        }
+    }
+    return s;
+}
+
+
+int DPSolver::calc(int pos, int surplus) {
     if(pos == word.length()){
         if(surplus == 0)
-            return "";
+            return 0;
         else
-            return "X";
+            return INFINITY;
     }
 
-    for (int z = 15; z >= 0; z--){
-        auto new_state = State::fromString(word.substr(pos, 1)).positions[0];
-        auto old_state = State::fromString(HEX_DIGITS.substr(z, 1)).positions[0];
+    int min_v = INFINITY;
 
-        auto r = difference(old_state, new_state);
+    for (int i = 15; i >= 0; i--){
+
+        auto r = difference(State::digitFromChar(word[pos]), State::digitFromChar(HEX_DIGITS[i]));
 
         int added_moves = r.first;
         int added_surplus = r.second;
 
-        auto v = calcMemo(pos + 1,
-                      c - added_moves - max(added_surplus, 0),
-                      surplus + added_surplus);
-        if(v != "X"){
-            return HEX_DIGITS[z] + v;
+        auto needed_moves = calcMemo(pos + 1, surplus + added_surplus) + added_moves + max(added_surplus, 0);
+
+        if(needed_moves < min_v){
+            min_v = needed_moves;
         }
     }
-    return "X";
+    return min_v;
 }
 
 // pair<moves, surplus>
 pair<int, int> DPSolver::difference(std::bitset<7> c1, std::bitset<7> c2) {
-    int excess = 0;
-    int needed = 0;
-    for(int i= 0 ; i < 7; i++){
-        if(c1[i] && !c2[i]){
-            ++excess;
-        }
-        if(!c1[i] && c2[i]){
-            ++needed;
-        }
-    }
+    size_t excess = (c1 & ~c2).count();
+    size_t needed = (~c1 & c2).count();
     if(excess > needed){
         return {needed, excess - needed};
     }else{
         return {excess, - (needed - excess)};
     }
-
 }
 
 std::string DPSolver::getMoves(std::string old, std::string next) {
@@ -96,21 +116,21 @@ std::string DPSolver::getMoves(std::string old, std::string next) {
     return ss.str();
 }
 
-std::string DPSolver::calcMemo(int pos, int c, int d) {
-    auto it = memo.find({pos, c, d});
+int DPSolver::calcMemo(int pos,  int d) {
+    auto it = memo.find({pos,  d});
     if(it != memo.end()){
         cacheHit++;
         return it->second;
     }
     cacheMiss++;
-    auto r = calc(pos, c, d);
-    memo[{pos, c, d}] = r;
+
+    auto r = calc(pos, d);
+    memo[{pos, d}] = r;
     return r;
 }
 
 bool DPSolver::memo_key::operator==(const DPSolver::memo_key &rhs) const  {
     return pos == rhs.pos &&
-           c == rhs.c &&
            d == rhs.d;
 }
 
