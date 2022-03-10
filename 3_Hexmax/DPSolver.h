@@ -36,6 +36,8 @@ private:
     int cacheMiss = 0;
 
     std::string word;
+    std::vector<std::bitset<7>> word_digits;
+
     int max_moves;
 
     std::string reconstruct(int max);

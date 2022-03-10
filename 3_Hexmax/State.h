@@ -26,6 +26,10 @@ public:
 
     constexpr static const std::array<int, 16> TABLE = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F, 0x77, 0x7C, 0x39, 0x5E, 0x79, 0x71};
 
+    static std::bitset<7> digitFromNumber(int i){
+        return TABLE[i];
+    }
+
     static std::bitset<7> digitFromChar(char c){
         int n;
         if(c >= '0' && c <= '9')

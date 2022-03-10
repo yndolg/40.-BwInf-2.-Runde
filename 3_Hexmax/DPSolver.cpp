@@ -18,12 +18,22 @@ std::string DPSolver::solve(const std::string& string, int i) {
     word = string;
     max_moves = i;
 
+    word_digits.reserve(word.size());
+    for(char c: word){
+        word_digits.push_back(State::digitFromChar(c));
+    }
+
+
     memo = vector<int>((string.size()+1) * (1+2*max_moves), -1);
 
     auto r = reconstruct(i);
     cout << "Cache rate: " << cacheHit  << "/" << (cacheMiss+cacheHit) <<"\n";
 
-    //cout << "Cache size: " << memo.size() << "/" << 2 * i * string.size() << "\n";
+    int c = 0;
+    for(auto x: memo)
+        if(x == -1)
+            c += 1;
+    cout << "Cache fill: " << c << "/" << memo.size() << "\n";
     return r;
 }
 
@@ -68,7 +78,7 @@ int DPSolver::calc(int pos, int surplus) {
 
     for (int i = 15; i >= 0; i--){
 
-        auto r = difference(State::digitFromChar(word[pos]), State::digitFromChar(HEX_DIGITS[i]));
+        auto r = difference(word_digits[pos], State::digitFromNumber(i));
 
         int added_moves = r.first;
         int added_surplus = r.second;
