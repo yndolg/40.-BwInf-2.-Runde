@@ -6,7 +6,8 @@
 
 using namespace std;
 int main() {
-    std::ifstream ifs("../Eingabe/hexmax5.txt");
+
+    std::ifstream ifs("../Eingabe/hexmax0.txt");
     std::string s;
     ifs >> s;
     int c;
@@ -17,6 +18,7 @@ int main() {
 
     cout << "Solution: " << r << "\n";
     cout << "Moves: \n";
-    cout << solver.getMoves(s, r);
+    //cout << DPSolver::getMoves(s, r);
+    cout << DPSolver::getMoves("E18", "8E1");
     return 0;
 }

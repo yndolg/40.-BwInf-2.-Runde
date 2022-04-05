@@ -14,26 +14,12 @@
 #include "State.h"
 
 class DPSolver {
-    struct memo_key{
-        int pos;
-        int d;
-
-        bool operator==(const memo_key &rhs) const;
-
-        bool operator!=(const memo_key &rhs) const;
-    };
-
-
 private:
-    int calc(int pos, int surplus);
-    int calcMemo(int pos, int surplus);
+    int getDP(int pos, int surplus);
 
     std::vector<int> memo;
 
-
     static std::pair<int, int> difference(std::bitset<7> c1, std::bitset<7> c2);
-    int cacheHit = 0;
-    int cacheMiss = 0;
 
     std::string word;
     std::vector<std::bitset<7>> word_digits;
@@ -41,13 +27,15 @@ private:
     int max_moves;
 
     std::string reconstruct(int max);
-    int memoKey(memo_key m) const;
 
 public:
-    std::string solve(const std::string& string, int i);
+    std::string solve(const std::string &string, int i);
 
-    std::string getMoves(std::string old, std::string next);
+    static std::string getMoves(std::string old, std::string next);
 
+    void calcBottomUp();
+
+    [[nodiscard]] int memoKey(int pos, int d) const;
 };
 
 
