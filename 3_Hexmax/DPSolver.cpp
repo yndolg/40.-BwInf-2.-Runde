@@ -81,9 +81,8 @@ void DPSolver::calcBottomUp() {
             }
 
             int min_v = INFINITY;
-
+            int min_p = -1;
             for (int i = 15; i >= 0; i--) {
-
                 auto r = difference(word_digits[pos], State::digitFromNumber(i));
 
                 int added_moves = r.first;

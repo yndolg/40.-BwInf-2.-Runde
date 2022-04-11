@@ -18,6 +18,7 @@ private:
     int getDP(int pos, int surplus);
 
     std::vector<int> memo;
+    std::vector<int> parent;
 
     static std::pair<int, int> difference(std::bitset<7> c1, std::bitset<7> c2);
 

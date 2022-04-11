@@ -1,7 +1,7 @@
 import copy
 from statistics import mode
 
-f = open("Eingabe/stapel4.txt")
+f = open("../Eingabe/stapel4.txt")
 
 n, K, m = [int(x) for x in f.readline().split()]
 

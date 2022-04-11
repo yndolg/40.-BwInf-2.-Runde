@@ -1,7 +1,7 @@
 import functools
 import math
 
-f = open("Eingabe/stapel0.txt")
+f = open("../Eingabe/stapel0.txt")
 
 
 # n, k, m = [int(x) for x in f.readline().split()]

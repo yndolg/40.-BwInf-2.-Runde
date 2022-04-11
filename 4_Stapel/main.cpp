@@ -119,8 +119,8 @@ int main() {
     }
 
     cout << "Running meet-in-the-middle:\n";
-    MeetInTheMiddle<129> mitm;
-    mitm.solve(matrix, k+1);
+    //MeetInTheMiddle<129> mitm;
+    //mitm.solve(matrix, k+1);
 
 
     omp_set_num_threads(8);

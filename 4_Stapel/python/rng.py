@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import seaborn as sn
 
-f = open("Eingabe/stapel2.txt")
+f = open("../Eingabe/stapel2.txt")
 
 n, k, m = [int(x) for x in f.readline().split()]
 

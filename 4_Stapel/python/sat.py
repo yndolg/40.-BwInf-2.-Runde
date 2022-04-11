@@ -3,7 +3,7 @@
 from functools import reduce
 
 
-f = open("Eingabe/stapel5.txt")
+f = open("../Eingabe/stapel5.txt")
 
 n, k, m = [int(x) for x in f.readline().split()]
 cards = []
