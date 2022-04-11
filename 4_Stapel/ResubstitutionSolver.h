@@ -2,8 +2,8 @@
 // Created by niels on 28.02.22.
 //
 
-#ifndef STAPEL_RESUBSTITUTION_H
-#define STAPEL_RESUBSTITUTION_H
+#ifndef STAPEL_RESUBSTITUTIONSOLVER_H
+#define STAPEL_RESUBSTITUTIONSOLVER_H
 
 #include <chrono>
 #include <vector>
@@ -12,11 +12,12 @@
 #include <iostream>
 #include <omp.h>
 #include <algorithm>
+#include "Utils.h"
 
 using namespace std;
 
 template<int size>
-class Resubstitution {
+class ResubstitutionSolver {
     std::chrono::steady_clock::time_point last_progress;
 
     static long long total_progress;
@@ -108,6 +109,9 @@ class Resubstitution {
     }
 
     vector<vector<int>> prepare(){
+
+        matrix = Utils::gauss(matrix);
+
         //Re-Substitution
         n_vars = matrix[0].size() - 1;
         for(const auto& row: matrix){
@@ -170,8 +174,8 @@ class Resubstitution {
             base_words.push_back(word);
         }
 
-        /*#pragma omp parallel default(none) shared(solution, K)
-        #pragma omp single*/
+        #pragma omp parallel default(none) shared(solution, K)
+        #pragma omp single
         resub(n_vars - 1 , solution, K + 1, bitset<size>());
 
 
@@ -184,6 +188,8 @@ class Resubstitution {
 
 public:
     vector<vector<int>> solve(vector<vector<int>> mat, int number_of_cards){
+        omp_set_num_threads(8);
+
         matrix = std::move(mat);
         K = number_of_cards;
         return prepare();
@@ -191,4 +197,4 @@ public:
 };
 
 
-#endif //STAPEL_RESUBSTITUTION_H
+#endif //STAPEL_RESUBSTITUTIONSOLVER_H
