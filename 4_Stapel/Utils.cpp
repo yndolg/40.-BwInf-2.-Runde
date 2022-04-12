@@ -14,29 +14,42 @@
 #include <fstream>
 
 using namespace std;
+
+//total: O(nm * max(n, m))
 std::vector<std::vector<int>> Utils::gauss(std::vector<std::vector<int>> matrix) {
     int h = 0;
     int k = 0;
+
+    // m times --> O(nm^2)
     while (h < matrix.size() && k < matrix[0].size()) {
         int i_max = h;
+
+        // O(n)
         while (i_max < matrix.size() && matrix[i_max][k] == 0) {
             i_max += 1;
         }
-        if (i_max == matrix.size()) {
+        if (i_max == matrix.size()) { // O(1)
             k++;
-        } else {
+        } else { // O(nm)
+            // O(m)
             swap(matrix[h], matrix[i_max]);
+            // n-times --> O(nm)
             for (int i = h + 1; i < matrix.size(); i++) {
+                // O(1)
                 int f = matrix[i][k] / matrix[h][k];
+                // m-times -> O(m)
                 for (int j = k; j < matrix[0].size(); j++) {
+                    // O(1)
                     matrix[i][j] = (matrix[i][j] + matrix[h][j] * f) % 2; // XOR
                 }
             }
+            // O(1)
             h++;
             k++;
         }
     }
 
+    // O(n*m)
     // remove all zero-lines
     matrix.erase(std::remove_if(matrix.begin(), matrix.end(), [](auto el){
         return std::count(el.begin(), el.end(), 1) == 0;
@@ -44,13 +57,16 @@ std::vector<std::vector<int>> Utils::gauss(std::vector<std::vector<int>> matrix)
 
 
     // bring into reduced echelon form
+    // n times --> O(nm)*n
     for(int row = matrix.size() - 1; row >= 0; row--){
         // this should work, as every line has a one (because all the others were removed before)
+        // O(m)
         auto leading_one = std::distance(matrix[row].begin(), std::find(matrix[row].begin(), matrix[row].end(), 1));
         // diese Reihe von allen darüberliegenden Reihen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
-        for(int i = 0; i < row; i++){
+        for(int i = 0; i < row; i++){ // n times --> O(nm)
             if(matrix[i][leading_one]){
                 // Row_i = Row_i ^ Row_row
+                //O(m)
                 std::transform(matrix[i].begin(), matrix[i].end(), matrix[row].begin(), matrix[i].begin(), std::bit_xor<>());
             }
         }
@@ -88,7 +104,6 @@ std::vector<std::vector<int>> Utils::transpose(std::vector<std::vector<int>> mat
         for (auto &card: mat) {
             equation.push_back(card[bit]);
         }
-        equation.push_back(0); // == 0 (mod 2)
         mat_transpose.push_back(equation);
     }
     return mat_transpose;

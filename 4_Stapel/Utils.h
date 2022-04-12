@@ -5,7 +5,6 @@
 #ifndef STAPEL_UTILS_H
 #define STAPEL_UTILS_H
 
-
 #include <vector>
 #include <string>
 
@@ -16,13 +15,23 @@ public:
         int k;
     };
 
+    template<typename T>
+    static std::vector<int> get_true_positions(const T &v) {
+        std::vector<int> r;
+        for (int i = 0; i < v.size(); i++) {
+            if (v[i])
+                r.push_back(i);
+        }
+        return r;
+    }
+
     static std::vector<std::vector<int>> gauss(std::vector<std::vector<int>> matrix);
 
     static Instance readInstanceFromFile(const std::string& path);
 
     static std::vector<std::vector<int>> transpose(std::vector<std::vector<int>>);
 
-    static void print_matrix(const std::vector<std::vector<int>> &matrix)
+    static void print_matrix(const std::vector<std::vector<int>> &matrix);
 };
 
 
