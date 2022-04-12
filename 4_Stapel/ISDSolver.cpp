@@ -17,7 +17,7 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
 
     int t = instance.k + 1;
     while (true) {
-        attempts+=1;
+        attempts += 1;
         // copy H
 
         // permute the columns of H into H_perm
@@ -51,17 +51,11 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
 
         // calculate all p-bit subsets of not_m_i, or less, if not_m_i.size() < 2
         int p = 1;
-        std::vector<int> bitmask(p, 1);
-        bitmask.resize(not_m_i.size(), 0);
-        do {
+        for (int p2: not_m_i) {
             vector<int> syndrome(n_rows, 0);
-            for (int i = 0; i < bitmask.size(); i++) {
-                if (bitmask[i]) {
-                    for(int j = 0; j < n_rows; j++)
-                        syndrome[j] = (H_perm[j][not_m_i[i]] + syndrome[j]) % 2;
-                }
-            }
 
+            for (int j = 0; j < n_rows; j++)
+                syndrome[j] = H_perm[j][p2];
 
             // if column p has weight of exactly t - 1 => match
             int w = 0;
@@ -70,12 +64,10 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
 
             if (w == t - p) {
                 vector<int> solution(n_cols, 0);
+
                 // solution has bits in p set and the columns of the pivots in the rows of the syndrome (p)
-                for (int i = 0; i < bitmask.size(); i++) {
-                    if (bitmask[i]) {
-                        solution[not_m_i[i]] = 1;
-                    }
-                }
+                solution[p2] = 1;
+
                 for (int i = 0; i < n_rows; i++) {
                     if (syndrome[k_i[i]] == 1) {
                         solution[m_i[i]] = 1;
@@ -95,8 +87,9 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
                  cout << "\n";*/
                 return {Utils::get_true_positions(solution_perm)};
             }
+        }
 
-        } while (std::prev_permutation(bitmask.begin(), bitmask.end()));
+
     }
 
 }
