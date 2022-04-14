@@ -1,0 +1,189 @@
+\documentclass[a4paper,10pt,ngerman]{scrartcl}
+
+\input{preamble.tex}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Lösungsidee}
+\subsection{Modellierung}
+Gegeben ist ein Wort $w$ aus $x_0, x_1, ..., x_n$ Zeichen, die jeweils eine Stelle der Hexadezimalzal beschreiben, und eine Maximalzahl an Umlegungen $m$. Jedes Zeichen ist ein 7-Tupel, welches für jede Position im Zeichen angibt, ob sie aktiviert oder deaktiviert ist. 
+
+Gesucht ist nun das größte solche Wort, was sich mit maximal $m$ Umlegungen aus $w$ legen lässt.
+
+\subsection{Lösung}
+
+Das Problem kann mittels dynmischer Programmierung und einem anschließenden Greedy-Verfahren gelöst werden. 
+Sei
+\begin{align}
+    f(p, e)
+\end{align}
+die Anzahl der Umlegungen, die mindestens benötigt werden, um insgesamt $e$ zusätliche Positionen im Teilwort $w_p, ..., w_n$ zu besetzten und eine valide Zahl zu erhalten. Die zusätzlich gesetzten Positionen zählen dabei nicht als Umlegung. Die Zahl $e$ kann auch negativ sein, was bedeutet, dass $e$ Positionen entfernt werden sollen.
+
+Ist $f(p, e)$ für alle $p$ und $e$ bekannt, kann das maximale Wort über ein Greedy-Verfahren rekonstruiert werden. 
+$f(p, e)$ kann über dynamische Programmierung berechnet werden. 
+
+Sei dazu $d(x,y)$ die Anzahl der Stäbe, die innerhalb des Zeichens umgelegt werden müssen, um das $x$ in $y$ umzuwandeln. $d(2, 3)$ wäre beispielsweise 1 und $d(8,9) = 0$, da kein Stab umgelegt werden muss, sondern nur ein Stab entfernt wird.   
+$n(x, y)$ ist analog dazu die Anzahl der Stäbchen, die entfernt bzw. hinzugefügt werden müssen, um $x$ in $y$ umzuwandeln.  $n(2, 3)$ ist beispielsweise 0 und $n(8,9)$ ist -1.
+Nun gilt
+\begin{align}
+    f(p, e) = \min_{x\in [0, 15]} f(p + 1, e + n(w_p, x)) + d(w_p, x) + \max(n(w_p, x), 0). \label{eq:rek}
+\end{align}
+Die aktuelle Stelle $p$ kann zu den Zahlen 0–F umgewandelt werden. Dabei werden $n(w_p, x)$ Stäbchen frei, die im Rest des Wortes integriert werden müssen. Zu den dafür notwendigen Umlegungen werden die Umlegungen addiert, die im Zeichen $w_p$ gebracht werden ($d(w_p, x)$). 
+Auch die Stäbchen, die aus dem Zeichen entfernt bzw. hinzugefügt wurden sind Umlegungen. Um diese jedoch nicht doppelt zu zählen, werden nur positive Zahlen gezählt. 
+Das sorgt dafür, dass solche Umlegungen zwischen Zeichn immer in dem Zeichen gezählt werden, aus dem die Stäbchen kommen. Das Einfügen zählt dann nicht mehr als Umlegung. 
+Schließlich wird das Minimum über alle möglichen Zeichen an der Position $p$ verwendet. 
+ 
+Mit der Rekurrenz \ref{eq:rek} kann $f(p, e)$ für alle möglichen Werte bottom-up vorberechnet werden, wie in Algorithmus \ref{alg:precalc} dargestellt.
+\begin{algorithm}
+\caption{Berechnung von $f$}
+\label{alg:precalc}
+\begin{algorithmic}[1]
+    \Procedure{Vorberechnen}{$w, m$}
+    \State sei $dp[0, ..., n-1][-m, ..., m]$ ein neues Array
+    \For {$p \gets 0,...,n-1$}
+        \For {$e \gets -m, ..., m$}
+            \State{$dp[p][e] \gets \min_{x\in [0, 15]} f(p + 1, e + n(w_p, x)) + d(w_p, x) + \max(n(w_p, x), 0)$}
+        \EndFor 
+    \EndFor
+    \State \textbf{return} $dp$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm} 
+
+Ist $f(p, e)$ bekannt, kann die größte Zahl greedy rekonstruiert werden. Dazu wird an jeder Stelle, von links nach rechts, die größte Zahl verwendet, bei der die dann benötigten Umlegungen im Rest des Wortes nicht mehr als erlaubt sind. 
+\begin{algorithm}
+    \caption{Rekonstruktion der maximalen Zahl}
+    \label[]{alg:reconstruct}
+    \begin{algorithmic}[1]
+        \Procedure{Rekonstruktion}{$w, f$}
+            \State $e \gets 0$ \Comment{Aktuell überschüssige Stäbe}
+            \State $p \gets 0$ \Comment{Aktuelle Position im Wort}
+            \State $z \gets m$ \Comment{Noch übrige Umlegungen}
+
+            \State $s \gets "\,"$  \Comment{Das rekonstruierte Wort}
+        \While{$p < n$}
+            \For{$x \gets 0,...,F$}
+                \If{$f(p + 1, e + n(w_p, x)) + d(w_p) + \max(n(w_p, x), 0) \leq z$}
+                    \State $e \gets e + n(w_p, x)$
+                    \State $s \gets s + x$
+                    \State $p \gets p + 1$
+                    \State $z \gets z - d(w_p) - \max(n(w_p, x), 0)$
+                    \State \textbf{break}
+                \EndIf
+            \EndFor
+        \EndWhile
+        \State \textbf{return} $s$
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+Nun ist die Größte Zahl gefunden. In der Aufgabenstellung ist weiterhin gefordert, die Zwischenstände nach jeder Umlegung auszugeben. Dafür muss also eine Folge an Umlegungen gefunden werden, um vom Eingabewort zum Ergebnis zu gelangen. Weiterhin ist gefordert, dass während der Umlegungen ein Zeichen niemals vollständig geleert werden darf. 
+Die Grundidee dafür ist es, alle Positionen zu finden, in denen ein Stäbchen benötigt/überflüssig ist. Daraufhin muss immer ein Stäbchen von einer bisher belegten zu einer unbelegten Stelle bewegt werden. Da es genau so viele Stellen gibt, in denen ein Stäbchen benötigt wird, wie in denen ein Stäbchen überflüssig ist es ersteinmal egal, welches Stäbchen wohin und in welcher Reihenfolge bewegt wird. Es muss jedoch darauf geachtet werden, dass keine Stelle zu einem Zeitpunkt vollständig gelehrt ist. 
+\begin{algorithm}
+    \caption{Finden der Umlegungen}
+    \label[]{alg:moves}
+    \begin{algorithmic}[1]
+        \Procedure{Umlegen}{$w_1, w_2$}
+            \State $e \gets []$ \Comment{Positionen mit überschüssigem Stäbchen}
+            \State $n \gets []$ \Comment{Positionen, die ein Stäbchen benötigen}
+        \For{$z \gets 0,..,n-1$} \Comment{über alle Zeichen iterieren}
+            \For{$i \gets 0,...,6 $} \Comment{über die sieben Segmente iterieren}
+                \If{Segment $i$ von Zeichen $z$ muss gesestzt werden}
+                    \State $n$.push($(z, i)$)
+                \EndIf
+                \If{Segment $i$ von Zeichen $z$ muss entfernt werden}
+                    \State $e$.push($(z, i)$)
+                \EndIf
+            \EndFor
+            \While{$e.\text{size()} > 0$ und $n.\text{size()} > 0$}
+                \State $a \gets e$.pop()
+                \State $b \gets n$.pop()
+                \State bewege Stäbchen von $a$ nach $b$
+            \EndWhile
+        \EndFor
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+Das Funktionsprinzip des Algorithmus ist es, Segmente zu finden, die aktiviert bzw. deaktiviert werden müssen und diese in Listen zu vermerken. Nach jedem Zeichen wird jeweils ein zu aktivierendes und ein zu deaktivierendes Segment aus den Listen entfernt und das Stäbchen bewegt. Der Beweis, warum dadurch ein Zeichen niemals vollständig geleert werden kann, folgt unter \ref{sec:prove}.
+\subsection{Analyse der Laufzeit}
+Zunächst wird die Laufzeit von Algorithmus \ref{alg:precalc} analysiert.
+Die Initialisierung des Arrays in Zeile 2 benötigt $T(n, m) = \Theta(n \cdot 2 m) = \Theta(n \cdot m)$ Laufzeit.
+Zeile 5 benötigt eine Laufzeit von $\Theta(1)$, da der Ausdruck 15 Mal ausgewertet wird, unabhängig von $n$ und $m$.
+Diese Zeile wird durch die beiden for-Schleifen $n \cdot 2m$-Mal ausgeführt. 
+So ergibt sich eine Gesamtlaufzeit von 
+\begin{align*}
+    T(n, m) &= \Theta(n \cdot m) + \Theta(n \cdot 2m)\\
+    T(n, m) &= \Theta(nm)
+\end{align*}
+
+Nun wird die Laufzeit von Algorithmus \ref{alg:reconstruct} analysiert.
+Die Zeilen 2–5 benötigen insgesamt $T(n) = \Theta(1)$ Laufzeit. 
+Die while-Schleife in Zeile 6 wird $n$-Mal ausgeführt, da in jedem Durchlauf $p$ um mindestens 1 erhöht wird und die Schleife terminert, wenn $p >= n$ gilt. 
+Die for-Schleife in Ziele 7 wird maximal 15-Mal ausgeführt und die Zeilen 8-14 benötigen insgesamt $T(n,m) = \Theta(1)$ Laufzeit. 
+So ergibt sich für die Laufzeit von Algorithmus \ref{alg:reconstruct}
+\begin{align*}
+    T(n,m) &= n \cdot 15 \cdot \Theta(1)\\
+    T(n, m) &= \Theta(n) \cdot \Theta(1)\\
+    T(n, m) &= \Theta(n)
+\end{align*}
+
+Algorithmus \ref{alg:moves} hat eine Laufzeit von $T(n) = \Theta(n)$. Die Zeilen 2 und 3 benötigen $\Theta(1)$ Zeit und werden nur einmal ausgeführt. 
+Die for-Schleife aus Zeile vier wird $n$-Mal ausgeführt. 
+Die Zeilen 5-12 benötigen pro Ausführung $\Theta(1)$ Laufzeit, da die for-Schleife in Zeile 5 immer konstant oft ausgeführt wird und jeweils eine konstante Laufzeit pro Iteration hat. 
+
+Die while-Schleife in Zeile 13 wird während des gesamten Durchlauf des Algorithmus nicht öfter als $7n$-Mal aufgerufen, da jedes Segment nur einmal in die Listen eingefügt wurde. Die Zeilen 13-17 benötigen also insgesamt $O(n)$ Laufzeit.
+Die Gesamtlaufzeit von Algorithmus \ref{alg:moves} ist also 
+\begin{align*}
+    T(n) &= n \cdot \Theta(1) + O(n)\\
+    T(n) &= \Theta(n).
+\end{align*}
+Die drei Algorithmen haben zusammen eine Laufzeit von 
+\begin{align*}
+    T(n, m) &= \Theta(n) + \Theta(nm) + \Theta(n)\\
+    T(n, m) &= \Theta(nm)
+\end{align*}
+\subsection{Analyse des Speicherbedarfs}
+Das $dp$-Array von Algorithmus \ref{alg:precalc}benötigt insgesamt $n \cdot (2m + 1) = \Theta(nm)$ Speicher. Zusammen mit den Variablen $p, e$ und $x$ ergibt sich ein Speicherbedarf von $\Theta(nm) + \Theta(1) = \Theta(nm)$.
+
+Die Rekonstruktion verwendet lediglich die Ganzzahlen $e, p, z$ und $x$, die einen Speicherbedarf von $\Theta(1)$ haben. Der String $w$ wird genau so lang wie das Eingabewort und benötigt $\Theta(n)$ Speichereinheiten. 
+Insgesamt hat Algorithmus \ref{alg:reconstruct} also einen Speicherbedarf von $\Theta(1) + \Theta(n) = \Theta(n)$.
+
+Algorithmus \ref{alg:moves} verwendet zwei Listen. Da jedes Segment nur einemal in eine der Listen eingefügt wird, können diese Zusammen niemals mehr als $7n = O(n)$ Speicher benötigen. 
+Die drei Algorithmen haben zusammen einen Speicherbedarf von $\Theta(n) + \Theta(nm) + O(n)= \Theta(nm)$.
+\subsection{Beweis der Richtigkeit}
+Nachdem Algorithmus \ref{alg:precalc} terminiert hat, für alle Werte von $0 < p < $ und $e$ 
+\subsection{Erweiterungen}
+\subsubsection{Kurze Wege beim Umlegen, vllt. sogar travelling salesman?}
+Nachdem Severin es nun geschafft hat, die größtmögliche Hex-Zahl zu finden möchte die Lehrerin, dass er die Umlegungen auf dem Tisch durchführt. Da die Zahl sehr groß ist, ist es wichtig, dass er sich beim Umwegen möglichst wenig bewegen muss. 
+\subsubsection{Möglichst nah an Zielzahl}
+Nun hat Severins lehrerin eine weitere Aufgabe: er soll nicht nur die größtmögliche Zahl finden, sondern eine, die Möglichst nah an einer Zielzahl liegt. Der Algorithmus kann dadurch Greedy-Bleiben, die Auswahl wird jedoch deutlich komplexer.
+\subsubsection{Bestimmte Stellen sind nicht veränderbar}
+Einige Stäbchen liegen schon seit sehr langer Zeit auf ihrem Platz und sollen deshalb auf gar keinen Fall bewegt werden. Dennoch möchte Severin die größtmögliche Zahl finden. 
+[Algorithmus funktioniert fast unverändert, mann müsste nur filten, welche Buchstaben erlaubt sind]
+\subsubsection{Stellen können entfernt werden}
+Dadurch wird es immer schlechter.... 
+\subsubsection{Statt maximaler Zahl: maximaler Term}
+Ich hab absolut keine Ahnung, wie ich die Operatoren ausdrücken soll. Vllt. mit 14-Segment anzeigen, als weitere ergänzung
+\subsubsection{erlauben, zusätzliche Stellen einzufügen}
+Der beste weg wäre es, einsen vorne heranzuschreiben, um eine Längere Zahl zu erhalten, könnte aber trotzdem interessant sein.
+\subsubsection{Nicht nur umlegungen, sondern auch dazulegen, wegnehmen}
+Durchaus interessant, hat aber keine Auswirkungen auf den Algorithmus...
+\subsubsection{Andere Zahlensystem, vllt. sogar Römische Zahlen}
+Nur auf 14-Segment-Anzeigen 
+\subsubsection{Dot-Matrix-Display}
+Eigentlich echt eine Interessante Idee...
+\label[]{sec:prove}
+\section{Umsetzung}
+Die Lösung wurde in \texttt{C++} implementiert. 
+
+\section{Beispiele}
+Genügend Beispiele einbinden! Die Beispiele von der BwInf-Webseite sollten hier diskutiert werden, aber auch eigene Beispiele sind sehr gut – besonders wenn sie Spezialfälle abdecken. Aber bitte nicht 30 Seiten Programmausgabe hier einfügen!
+
+\section{Quellcode}
+Unwichtige Teile des Programms sollen hier nicht abgedruckt werden. Dieser Teil sollte nicht mehr als 2–3 Seiten umfassen, maximal 10.
+
+
+
+\end{document}

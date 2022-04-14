@@ -1,0 +1,189 @@
+\documentclass[a4paper,10pt,ngerman]{scrartcl}
+
+\input{preamble.tex}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Lösungsidee}
+\subsection{Modellierung}
+Gegeben sind $n$ Karten, die aus jeweils $m$ Bits bestehen. Das exklusive Oder von $k$ dieser Karten soll eine weitere Karte ergben.
+Da das exklusive Oder mit sich selbst immer null ist, kann äquivalent nach $k + 1$ Karten gesucht werden, deren exklusives Oder null ist.
+Die Operation XOR von Binärwörtern der Länge $m$ entspricht der Addition von Vektoren aus $\mathbb{F}_2^m$, also dem $m$-dimensionalen Vektorraum über den Körper der Restklassen modulo 2. 
+Da es sich bei $\mathbb{F}_2$ um einen Körper handelt, können viele der üblichen Rechnungen, im Besonderen die der linearen Algebra, wie üblich durchgeführt werden. 
+Um die gängige Terminologie aus der Kodierungstheorie verwenden zu können, werden die Karten als Spalten einer $m\times n-$Matrix $\mathbf{H}$ dargestellt. Gegenüber der Eingabedatein ist diese Matrix also gespiegelt. 
+Das Problem besteht nun daraus, eine Kombination von $t + 1$ Spalten aus $\mathbf{H}$ zu finden, die sich (in $\mathbb{F}_2^m$) zu $\mathbf{0}$ addieren. Das entspricht dem Finden von einem $x \in \mathbb{F}^m_2$, für das 
+\begin{align*}
+    x \mathbf{H} = \mathbf{0}
+\end{align*}
+und 
+\begin{align*}
+    wt(x) = t+1
+\end{align*}
+gilt. $wt(x)$ bezeichnet dabei das Hamming-Gewicht des Vektors, also die Anzahl der von null verschiedenen Stellen. 
+Dieses Problem wird als \textit{Minimales-Codeword-Problem} (eng. minimum codeword problem) bezeichnet und eingehend untersucht, unter anderem, da es eine zentrale Rolle für die Sicherheit des McElice-Kryptosystems spielt. 
+Wenn $H$ die Kontrollmatrix (eng. parity check matrix) eines linearen Blockcodes ist, ist $x$ ein Codeword dieses Codes, welches ein bestimmtes Hamming-Gewicht hat. 
+
+Berlekamp, McElice und Tilborg \cite{berlekampInherentIntractabilityCertain1978} haben gezeigt, dass dieses Problem NP-völlständig ist, indem sie das 3-dimensionale Matchingproblem darauf reduziert haben, welches wiederum eins von Karps 21 NP-vollständigen Problemen ist.
+Folglich ist es sehr unwahrscheinlich, dass es einen Algorithmus gibt, der das Problem in polynomieller Laufzeit löst. 
+Im folgenden sind zwei mögliche Lösungsansätze dargestellt. 
+Der erste ist ein Brute-Force-Ansatz, bei dem das Problem zunächst mithilfe von linearer Algebra vereinfacht wird und dann durch Ausprobieren aller restlichen Möglichkeiten gelöst wird.
+Der zweite Ansatz basiert auf \textit{Information-Set-Decoding} und ist in den meisten Fällen deutlich effizienter. Es handelt sich jedoch um einen Las-Vegas-Algorithmus. 
+Das heißt, dass die Laufzeit nicht deterministisch ist und der Algorithmus auch nicht verwendet werden kann, um mit Sicherheit zu zeigen, dass es keine Lösung gibt. 
+
+\subsection{Lösungsansatz 1: Information-Set-Decoding}
+Da das Problem eine zentrale Rolle für die Sicherheit von mehrern Post-Quantum-Kryptosystemen essentiell ist, gibt es bereits verschieden Algorithmen, die in der Praxis deutlich effizienter als ein Brute-Force-Ansatz sind. 
+Diese basieren auf dem sogenannten Information-Set-Decoding (ISD). 
+Es handelt sich um nichtdeterministische Las-Vegas-Algorithmen, das heißt, dass sie zwar immer das richtige Ergebnis zurückgegeben, die Laufzeit aber zufällig ist. 
+Im Kern der Algorithmen steht eine Prozedur, die mit einer Wahrscheinlichkeit $p$ eine Lösung findet. Findet sie keine Lösung, wird sie solang wiederholt, bis sie eine Lösung gefunden hat. 
+
+Die Ursprungsform des ISD geht auf Prange \cite{prangeUseInformationSets1962} zurück.
+Später wurde der Algorithmus unter anderem von Lee und Brickell \cite{leeObservationSecurityMcEliece1988} und Stern \cite{sternMethodFindingCodewords1989} verbesssert. 
+Bei allen Algorithmen gibt es eine Abwägung zwischen der Laufzeit pro Versuch, der Wahrscheinlichkeit, dass der Versucht glückt und der Komplexität des Algorithmus.
+Zur Lösung des Problems wurde der Algorithmus von Lee und Brickell verwendet, da er für die gegebenen Beispieldaten völlig ausreichend und nicht unnötig komplex ist. Das vereinfacht auch die theoretische Analyse. 
+\begin{algorithm}
+    \caption{Finden der Umlegungen}
+    \label[]{alg:moves}
+    \begin{algorithmic}[1]
+        \Procedure{LeeBrickellISD}{$H,t$}
+        \While{True}
+            \State generiere zufällige Permutation $p$
+            \State permutieren die Spalten von $H$ nach $p$
+            \State H in reduzierte Stufenform (eng. reduced row-echelon form) bringen
+            \State sei $I$ die Menge aller Spalten, die nur eine Eins enthalten
+            \For{ $x \gets $  $p$-große Teilmengen von Spalten $\notin \mathbf{I}$}
+            \State sei $s$ die Summe der Spalten $x$
+            \If{$wt(s) == t - p  + 1$}
+                \State $e_m = \begin{cases}
+                    1, \text{wenn } m \in p \text{ oder } s(\textbf{H}_I^{-1})_m = 1 \\
+                    0, \text{andernfalls}
+                \end{cases}$ 
+                \State permutiere $e$ mit $p^{-1}$
+                \State \textbf{return} $e$
+            \EndIf
+            \EndFor
+        \EndWhile
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+Für jeden Versuch wird eine zufällige Permutation generiert und die Spalten von $\mathbf{H}$ entsprechend permutiert. Daraufhin wird $\mathbf{H}$ in reduzierte Stufenform gebracht, beispielsweise mit dem Gauß-Jordan-Algoirthmus.
+Die Matrix wird nun nach Spalten in zwei Teile geteilt: die Submatrix $\mathbf{H}_I$ enthält alle Spalten, die lediglich eine 1 enthalten und ist folglich invertierbar und eine Submatrix aus den restlichen Spalten. 
+Da die Spalten am Anfang zufällig permutiert wurden, wird so eine in jedem Durchlauf zufällige Auswahl von Spalten gefunden, die eine invertierbare Submatrix bilden. 
+Nun werden alle Summen von $p$-großen Teilmengen der Spalten $\notin I$ berechent. 
+Wenn im gesuchten Wort in dieser zufälligen Permutation genau $p$ Einsen in den Positionen $\notin I$ sind, können die restlichen Einsen in Spalten $\in I$ durch lineare Algebra bestimmt werden. 
+Das ist genau dann der Fall, wenn das Hamming-Gewicht der Summe genau $t-p+1$ entspricht. Zusammen mit den $p$ einsen aus dem Teil $\notin I$ soll das Wort nächmlich ein Gewicht von $t+1$ haben. 
+Schließlich wird das Wort rekonstruiert und zurückgegeben. 
+
+\subsubsection{Laufzeit- und Speicherkomplexität}
+Zunächst wird die Laufzeit- und Speicherkomplexität von einem einzigen Durchlauf analysiert. 
+Die zufällige Permutation $p$ kann beispielsweise mit dem Fisher-Yates-Algoirthmus in $\Theta(n)$ berechnet werden, das permutieren der Matrix benötigt dann aber $\Theta(nm)$ Laufzeit, da $n$ Spalten getauscht werden müssen, die jeweils aus $m$ Elementen bestehen.
+Daraufhin muss $\mathbf{H}$ in reduzierte Stufenform gebracht werden, beispielsweise mit dem Gauss-Jordan-Algorithmus. 
+Eine detaillierte beschreibung des Verfahrens und der Laufzeitanalyse würde jedoch den Ramen sprengen.
+Die implementierte Version des Algorithmus hat eine Worst-Case-Laufzeit von $O(nm\cdot \max(n,m))$.
+Durch diesen Schritt könnte die Anzahl der Zeilen in der Matrix geringer werden. 
+Im Worst-Case gehe ich jedoch davon aus, dass alle Zeilen linear unabhängig sind und die Matrix weiterhin $m$ Zeilen hat. 
+Die Menge $I$ enthält im Worst-Case folglich genau $m$ Spalten.
+Für das aufteilen in $I$ muss in jeder Zeile nach der ersten Eins gesucht werden, was eine Worst-Case Laufzeit von $\Theta(nm)$ hat.
+Die for-Schleife in Zeile 7 benötigt $\binom{n-m}{p}$ durchläufe.
+Das Berechnen der Summe der Spalten und deren Hamming-Gewicht benötigt $\Theta(pm)$ Laufzeit. 
+Ohne die Zeilen 10, 11 und 12 hat die for-Schleife also eine worst-case Laufzeit von $\binom{n-m}{p}\Theta(pm)$.
+Die Zeilen 10, 11 und 12 werden pro Aufruf der prozedur nur ein einziges Mal aufgerufen. Werden die in Zeile 9 gefundenen Positionen gespeichert und wiederverwendet, ist die Berechnung von $e$ in $\Theta(m)$ möglich. 
+Insgesamt ergibt sich pro Iteration eine Laufzeit von 
+\begin{align*}
+    T(n, m) &= \Theta(n) + \Theta(nm) + O(nm \cdot \max(n, m)) + \binom{n-m}{p} \cdot \Theta(pm) + \Theta(m)\\
+               &= O(nm \cdot \max(n, m))  + \binom{n-m}{p}\cdot \Theta(pm)
+\end{align*}
+Mit $\binom{n}{k} = O\left(\left(\frac{en}{k}\right)^k\right)$ ergibt sich
+\begin{align*}
+    T(n, m) &= O\left(nm \cdot \max(n, m) +\left(\frac{n-m}{p}\right)^p \cdot pm\right)
+\end{align*}
+Es zeigt sich also, das die Laufzeit für eine Iteration exponentiell mit $p$ und polynomiell mit $n$ und $m$ steigt. Für den Parameter $p$ sollte also eine relativ kleine Zahl gewählt werden.
+Für die Gesamtlaufzeit ist aber nicht nur die Laufzeit einer Iteration wichtig, sondern auch die Erfolgswahscheinlichkeit.
+
+%Hier müsst ich eigentlich t+1 verwenden, wie es auch oben ist. Oder überall t beneutzen?
+Die $t$ Einsen könnten in $n$ verschiedenen Positionen auftreten, sodass es $\binom{n}{t}$ Möglichkeiten für $e$ gibt. Der Algorithmus ist erfolgreich, wenn genau $p$ der Einsen in $n-m$ Spalten und $t-p$ der Einsen in den restlichen $m$ Spalten sind. Folglich ist die Erfolgswahscheinlichkeit für eine einzige Iteration 
+\begin{align*}
+    P(\text{Erfolg}) = \frac{\binom{n-m}{p} \cdot \binom{m}{t-p}}{\binom{n}{t}}.
+\end{align*}
+Für den Erwartungwert für die Anzahl der Versuche bis ein Ereignis $X$ der Wahrscheinlichkeit $P(X)$ auftritt ist $E(x) = \frac{1}{P(X)}$.
+Folglich gilt, wenn $X$ die Anzahl der Durchläufe ist,
+\begin{align*}
+    E(X) = \frac{\binom{n}{t}}{\binom{n-m}{p} \cdot \binom{m}{t-p}}.
+\end{align*} 
+Dieser Wert ist gerade für Beispiele, in denen $t$ im Vergleich zu $n$ und $m$ relativ klein ist, ebenfalls relativ klein. 
+Im Folgenden ist $E(X)$ für verschiedene $p$ für die Beispiele von der BWINF-Website aufgeführt.
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lrrr}
+        \toprule
+    
+        Beispiel & $E(X)$, $p=0$ & $E(X)$, $p=1$ & $E(X)$, $p=2$ \\\midrule
+        stapel1.txt &1.33	&4.00 &  \\
+        stapel1.txt &1.82&	2.22&  \\
+        stapel2.txt &1.11	&10.09&  \\
+    stapel3.txt &13.68&	4.45&	3.31 \\
+    stapel4.txt	&51.58&	10.44	&4.78 \\
+    stapel5.txt	&332.57	&29.34&	6.63\\\bottomrule
+    \end{tabular}
+\end{table}
+Es ist zu erkennen, dass meistens schon wenige Durchläufe genügen, um eine Lösung zu finden. 
+Für die Implementation habe ich $p=1$ verwendet, da die Erfolgswahrscheinlichkeit in den meisten Fällen ausreicht und so die Implementation vereinfacht wird. Es wäre natürlich auch denkbar, $p$ an die Dimensionen der Eingabedaten anzupassen.
+
+Der Erwartungswert für die Laufzeit liegt damit bei 
+\begin{align*}
+    E(T) &= \frac{\binom{n}{t}}{\binom{n-m}{p} \cdot \binom{m}{t-p}} \cdot O\left(nm \cdot \max(n, m) +\left(\frac{n-m}{p}\right)^p \cdot pm\right) \\
+\end{align*}
+
+Die Speicherkomplexität beträgt $\Theta(n*m)$, da die $m \times n$-Matrix einmal kopiert werden muss, um die Permutation anzuwenden. Theoretisch wäre diese Kopie durch ein effizienteres Verfahren zur Anwendung der Permutation vermeidbar, der Speicherbedarf wird aber vermutlich keine Einschränkung für den Algorithmus darstellen, da die Laufzeiten bei derartig großen Instanzen nicht mehr vertretbar wäre. 
+Neben der Kopie der Matrix werden die Permutation und die Positionen der Pivots des Gauss-Algorithmus gepeichert, was zusätzlich $O(n)$ Speichereinheiten benötigt. 
+
+\subsection{Lösungsansatz 2: Brute-Force}
+Die Idee des Brute-Force-Ansatzes ist es, die Matrix zunächst über das Gauß-Jordan-Verfahren in Stufenform zu bringen. Daraufhin muss resubstituiert werden, um zur reduzierten Stufenform zu gelangen. 
+Da die Gleichungssesteme aber unterbestimmt sind, gibt es freie Variablen.
+In diesem Fall wird rekursiv versucht, zuerst die 0 und dann die 1 an dieser Stelle zu substituieren. 
+Hat das so gefundene Wort die richtige Anzahl an Einsen, wird es als Lösung ausgegeben, andernfalls werden per Backtracking andere Werte für die freien Variablen eingesetzt. 
+Das Verfahren kann unter anderem dadurch etwas beschleunigt werden, dass abgebrochen wird, wenn bereits die maximale Anzahl an Einsen verwendet wurde oder es nicht mehr genug Variablen gibt, um die nötige Anzahl an Einsen zu erreichen. 
+Als Backtracking-Verfahren hat dieser Algoirthmus eine exponentielle Laufzeit und ist im Vergleich zum Information-Set-Decoding unnötig ineffizient. 
+Das Verfahren hat aber den Vorteil, dass es vollständig derterministisch ist.
+Das heißt, das durch den Brute-Force-Ansatz mit Sicherheit bestätigt werden kann, dass es keien Lösung gibt, wenn das der Fall ist. 
+
+\subsection{Erweiterung: Generierung von Beispielen}
+\section{Umsetzung}
+Die Lösung wurde in \texttt{C++} implementiert. Die beiden Ansätze wurden in jeweils einer Klasse, \lstinline{ISDSolver} und \lstinline{BruteforceSolver} implementiert. Eine \lstinline{Utils}-Klasse enthält Methoden, die von beiden Algorithmen verwendet werden, beispielsweise eine Implementation des Gauß-Jordan-Algorithmus über $\mathbb{F}_2$.
+
+Zunächst wird die Implementation des Information-Set-Decoding Algorithmus von Lee und Brickell erläutert.
+Vor dem eigentlichen Algorithmus wird bereits einmal der Gauß-Jordan-Algorithmus auf der Matrix ausgeführt. 
+Das führt dazu, dass linear abhängige Zeilen entfernt werden und die Implementation vereinfacht wird, da die Matrix nun immer mindestens so viele Spalten wie Zeilen hat. 
+Bei jedem Versuch wird eine zufällige Permutation für die Spalten über die \lstinline{std::shuffle} Methode der \texttt{C++}-Standardbibliothek generiert und die Matrix nach dieser Permtuation kopiert. 
+Danach wird der Gauss-Jordan-Algorithmus ausgeführt und die Pivots gesucht und deren Zeilen und Spalten gespeichert. 
+Da $p=1$ verwendet wurde, kann danach über alle Spalten iteriert werden, in denen keine Pivots gefunden wurde und deren Hamming-Gewicht berechnet werden. 
+Hat die Spalte das richtige Gewicht, können über die gespeicherten Pivot-Positionen die notwendigen Bits gefunden werden, ohne wirklich das Syndrom mit der Inversen des Information-Sets zu multiplizieren.
+Schlussendlich wird die Permutation rückgängig gemacht und das Ergebnis ausgegeben. 
+Da der Algorithmus bereits sehr effizient ist, waren bei diesem Verfahren keine weiteren Optimierungen nötig. Biespielsweise könnte jedoch mit \lstinline{std::bitset<>}s statt \lstinline{std::vector<int>} gearbeitet werden, um die Ausführung zu beschleunigen.
+
+Der Brute-Force-Algorithmus ist hingegen deutlich ineffizienter und musste stark optimiert werden, um alle Beispiele in anehmbarer Zeit lösen zu können. 
+Dafür werden in der \lstinline{prepare()} Funktion einige Dinge vorberechnet, sodass beim eigentlichen berechnen weniger in der Matrix gesucht werden muss. 
+Konkret wird vorberechnet, welche Spalten Pivotelemente haben, da diese Spalten direkt berechnet werden können, statt 0 und 1 auszuprobieren.  Für die Berechnung ist außerdem wichtig, in welcher Spalte das jeweilige Pivotelement ist. 
+Daraufhin werden alle Indizes von einsen in den Zeilen und Spalten vorberechnet, um effizient über diese Positionen iterieren zu können. 
+Zuletzt werden alle Zeilen und Spalten in \lstinline{std::bitset<>}s gespeichert, ebenfalls um effizienter mit ihnen Rechnen zu können.
+Das eigentliche Lösen wurde dann Rekursiv in der Methode \lstinline{resub} implementiert.
+Die Methode bekommt eine Spalte, in der Substituiert werden soll, das bisherige Codewort, die Anzahl der Einsen, die noch gesetzt werden können und das Syndrom, also die Summe der Spalten, die im Codewort eine Eins haben. 
+Letere Beide Argumente könnten auch bei jedem Methodenaufruf neu berechent werden, werden aber aus Performancegründen ebenfalls übergeben. 
+Daraufhin wird der Wert für die Variable gesetzt, sofern er durch die Spaltenform bereits abgeleitet werden kann. 
+Hier wird eine While-Schleife verwendet, sodass mehrere solcher Spalten in einem rekursiven Aufruf gesetzt werden können und die relativ langsamen Funktionsaufrufe verhindert werden können.
+Die Suche kann optimiert werden, indem abgebrochen wird, wenn es nicht mehr genug Spalten gibt, um das Zielgewicht zu erreichen oder das Zielgewicht bereits überschritten wurde. 
+
+Schlussendlich wird nacheinander 0 und 1 für die aktuelle Variable eingesetzt und die Methode rekursiv für die nächste Variable aufgerufen. 
+
+\section{Beispiele}
+Genügend Beispiele einbinden! Die Beispiele von der BwInf-Webseite sollten hier diskutiert werden, aber auch eigene Beispiele sind sehr gut – besonders wenn sie Spezialfälle abdecken. Aber bitte nicht 30 Seiten Programmausgabe hier einfügen!
+
+\section{Quellcode}
+Unwichtige Teile des Programms sollen hier nicht abgedruckt werden. Dieser Teil sollte nicht mehr als 2–3 Seiten umfassen, maximal 10.
+
+\section{Quellen}
+\printbibliography
+
+\end{document}
