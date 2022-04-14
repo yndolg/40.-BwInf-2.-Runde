@@ -18,10 +18,10 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
     int t = instance.k + 1;
     while (true) {
         attempts += 1;
-        // copy H
 
-        // permute the columns of H into H_perm
+        // die Spalten von H permutieren und in H_perm abspeichern
         auto permutation = getRandomPermutation(n_cols);
+
         vector<vector<int>> H_perm;
         for (int row = 0; row < n_rows; row++) {
             vector<int> r(n_cols);

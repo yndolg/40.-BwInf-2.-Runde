@@ -27,7 +27,7 @@ public:
 
     static std::vector<std::vector<int>> gauss(std::vector<std::vector<int>> matrix);
 
-    static Instance readInstanceFromFile(const std::string& path);
+    static Instance readInstanceFromFile(std::ifstream& ifs);
 
     static std::vector<std::vector<int>> transpose(std::vector<std::vector<int>>);
 

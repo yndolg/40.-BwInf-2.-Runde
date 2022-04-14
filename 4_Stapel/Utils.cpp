@@ -2,7 +2,7 @@
 // Created by niels on 11.04.22.
 //
 
-#include "ResubstitutionSolver.h"
+#include "BruteforceSolver.h"
 #include <bitset>
 #include <omp.h>
 #include <chrono>
@@ -74,9 +74,7 @@ std::vector<std::vector<int>> Utils::gauss(std::vector<std::vector<int>> matrix)
     return matrix;
 }
 
- Utils::Instance Utils::readInstanceFromFile(const std::string& path) {
-
-    ifstream ifs(path);
+ Utils::Instance Utils::readInstanceFromFile(std::ifstream& ifs) {
     int n, k, m;
 
     ifs >> n;

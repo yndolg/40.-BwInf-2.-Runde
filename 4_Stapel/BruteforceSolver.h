@@ -2,8 +2,8 @@
 // Created by niels on 28.02.22.
 //
 
-#ifndef STAPEL_RESUBSTITUTIONSOLVER_H
-#define STAPEL_RESUBSTITUTIONSOLVER_H
+#ifndef STAPEL_BRUTEFORCESOLVER_H
+#define STAPEL_BRUTEFORCESOLVER_H
 
 #include <chrono>
 #include <vector>
@@ -18,7 +18,7 @@
 using namespace std;
 
 template<int size>
-class ResubstitutionSolver {
+class BruteforceSolver {
 
     vector<int> row_of_var;
     vector<vector<int>> matrix;
@@ -36,11 +36,11 @@ class ResubstitutionSolver {
     int K;
 
     /*
-     * Re-substitutes recursively all columns < col.
+     * Alle Variablen < col werden rekursive resubstituiert
      */
     void resub(int col, bitset<size> &codeword, int c, bitset<size> syndrome) {
 
-        // Estimate progress
+        // Fortschritt ausgeben
         if (col > 160) {
             double total = pow(2, n_cols);
             double done;
@@ -53,15 +53,17 @@ class ResubstitutionSolver {
         }
 
 
-        // Set the positions can be deduced directly
-        // row_of_var[col] >= 0: this variable has a pivot
+        // Variablen setzten, die bereits festgelegt werden können
+        // row_of_var[col] >= 0: Diese Variable hat ein Pivotelement im Gauss-Verfahren gehabt und kann folglich
+        //                       festgesetzt werden
         while (col >= 0 && row_of_var[col] >= 0 && c >= 0 && c <= col + 1) {
-            // This column can be computed from the previous values: the sum off all the activated columns in the
-            // row has become zero in the end, if it does not, we'll have to add this. This works, because it
-            // is always the last column that can be activated to satisfy a certain row
+
+            // Der Wert dieser Spalte wird aus den bereits substituierten Spalten berechnet: die Summe der Einsen in
+            // den bisher verwendeten Spalten in der Zeile, in der das Pivotelement war. Da das Pivotelement immer die
+            // erste Eins einer Zeile ist, sind alle Variablen, die diese Spalte beeinflussen können bereits substituiert
             bool v = (row_bitsets[row_of_var[col]] & codeword).count() % 2;
 
-            // If the column has been activated, we'll have to add it to the syndrome
+            // Wenn die Variable auf 1 gesetzt wurde, muss die Spalte zum aktuellen Syndrom hinzugefügt werden
             if (v) {
                 codeword[col] = 1;
                 syndrome ^= cols_bitsets[col];
@@ -71,33 +73,33 @@ class ResubstitutionSolver {
         }
 
 
-        // Abort, if there are not enough columns left to reach the target weight
+        // Abbrechen, wenn es nicht mehr genug Spalten gibt, um das Zielgewicht zu erreichen
         if (c > col + 1) {
             return;
         }
 
-        // Abort, if we're over the maximum weight
+        // Abbrechen, wenn das Zielgewicht bereits überschritten wurde
         if (c < 0) {
             return;
         }
 
 
-        // Substitution has reached the last column
+        // Die Substitution hat die letzte Variable erreicht
         if (col < 0) {
-            cout << "Found a solution:";
-            for (const auto p: Utils::get_true_positions(codeword)) {
-                cout << " " << p;
-            }
-            cout << "\n";
+            // TODO: abort the algorithm
             results.push_back(codeword);
             return;
         }
 
-        // Variable is free
+        // Die Variable 'col' ist frei. Rekursiv versuchen 0 oder 1 zu substituieren
         if (row_of_var[col] < 0) {
             auto mysolution = codeword;
             mysolution[col] = 0;
             resub(col - 1, mysolution, c, syndrome);
+
+            // Abbrechen, wenn bereits eine Lösung gefunden wurde
+            if(!results.empty())
+                return;
 
             auto mysolution2 = codeword;
             mysolution2[col] = 1;
@@ -105,8 +107,7 @@ class ResubstitutionSolver {
             return;
         }
 
-        // This should never happen. Each column is either free or non-free
-        cout << "An error occurred";
+        cout << "Ein Fehler ist aufgetreten.\n";
     }
 
 public:
@@ -117,17 +118,14 @@ public:
 
         resub(n_cols - 1, solution, K + 1, bitset<size>());
 
-
-        cout << "Finished resubstitution after "
-             << chrono::duration<double>(chrono::steady_clock::now() - starting_time).count() << " seconds.\n";
         vector<vector<int>> r;
         for (const auto &s: results) {
-            r.push_back(get_true_positions(s));
+            r.push_back(Utils::get_true_positions(s));
         }
         return r;
     }
 
-    explicit ResubstitutionSolver(Utils::Instance instance) {
+    explicit BruteforceSolver(Utils::Instance instance) {
 
         matrix = std::move(instance.H);
         K = instance.k;
@@ -137,7 +135,7 @@ public:
     void prepare() {
         matrix = Utils::gauss(matrix);
 
-        // precompute which row  has the pivot of a given column
+        // vorberechnen, welche Zeile das Pivotelement einer Spalte hat
         row_of_var = vector<int>(n_cols, -1);
         for (int i = 0; i < matrix.size(); i++) {
             int j = 0;
@@ -149,7 +147,7 @@ public:
             }
         }
 
-        //precompute the positions off all ones of a row, excluding the pivot elements
+        // alle Positionen mit Einsen einer Zeile vorberechnen, ohne das Pivotelement
         for (auto &row: matrix) {
             vector<int> ones;
             bool first = true;
@@ -165,7 +163,7 @@ public:
             ones_in_row.push_back(ones);
         }
 
-        // Precompute the positions of all ones in a column
+        // Positionen der Einsen in einer Spalte vorberechnen
         ones_of_col = vector<vector<int>>(n_cols, vector<int>(0));
         for (int col = 0; col < n_cols; col++) {
             if (row_of_var[col] >= 0) {
@@ -173,7 +171,7 @@ public:
             }
         }
 
-        // precompute bitsets of the columns
+        // Spalten in Bitsets umwandeln, um effizient das Syndrom berechnen zu können
         for (int i = 0; i < n_cols; i++) {
             bitset<size> word;
             word.reset();
@@ -184,7 +182,7 @@ public:
             cols_bitsets.push_back(word);
         }
 
-        // precompute bitsets of the rows, for more efficient computations
+        // Zeilen in Bitsets umwandelen, um effizienter damit rechnen zu können
         for (const auto &row: matrix) {
             bitset<size> bitset;
             for (int i = 0; i < row.size(); i++)
@@ -196,5 +194,4 @@ public:
     }
 };
 
-
-#endif //STAPEL_RESUBSTITUTIONSOLVER_H
+#endif //STAPEL_BRUTEFORCESOLVER_H
