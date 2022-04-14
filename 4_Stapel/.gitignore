@@ -1,0 +1,6 @@
+.idea
+.ipynb_checkpoints
+.vscode
+build
+cmake-build*/
+__pycache__
