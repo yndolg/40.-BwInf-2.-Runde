@@ -16,7 +16,7 @@
 using namespace std;
 
 //total: O(nm * max(n, m))
-std::vector<std::vector<int>> Utils::gauss(std::vector<std::vector<int>> matrix) {
+void Utils::gauss(std::vector<std::vector<int>>& matrix) {
     int h = 0;
     int k = 0;
 
@@ -71,7 +71,6 @@ std::vector<std::vector<int>> Utils::gauss(std::vector<std::vector<int>> matrix)
             }
         }
     }
-    return matrix;
 }
 
  Utils::Instance Utils::readInstanceFromFile(std::ifstream& ifs) {

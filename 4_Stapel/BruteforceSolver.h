@@ -133,7 +133,7 @@ public:
     }
 
     void prepare() {
-        matrix = Utils::gauss(matrix);
+        Utils::gauss(matrix);
 
         // vorberechnen, welche Zeile das Pivotelement einer Spalte hat
         row_of_var = vector<int>(n_cols, -1);

@@ -10,7 +10,7 @@ using namespace std;
 
 std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
 
-    instance.H = Utils::gauss(instance.H);
+    Utils::gauss(instance.H);
 
     auto n_cols = instance.H[0].size();
     auto n_rows = instance.H.size(); // the number of rows might get reduced
@@ -31,8 +31,8 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
             H_perm.push_back(r);
         }
 
-        // row_reduce H_perm
-        H_perm = Utils::gauss(H_perm);
+        // H_perm in reduzierte Spaltenform bringen
+        Utils::gauss(H_perm);
 
         // find pivots
         vector<int> m_i;
@@ -88,8 +88,6 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
                 return {Utils::get_true_positions(solution_perm)};
             }
         }
-
-
     }
 
 }

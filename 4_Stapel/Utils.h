@@ -25,7 +25,7 @@ public:
         return r;
     }
 
-    static std::vector<std::vector<int>> gauss(std::vector<std::vector<int>> matrix);
+    static void gauss(std::vector<std::vector<int>>& matrix);
 
     static Instance readInstanceFromFile(std::ifstream& ifs);
 
