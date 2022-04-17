@@ -15,6 +15,57 @@
 
 using namespace std;
 
+void Utils::efficientGauss(std::vector<boost::dynamic_bitset<>>& bit_mat){
+    int h = 0;
+    int k = 0;
+
+    // m times --> O(nm^2)
+    while (h < bit_mat.size() && k < bit_mat[0].size()) {
+        int i_max = h;
+
+        // O(n)
+        while (i_max < bit_mat.size() && bit_mat[i_max][k] == 0) {
+            i_max += 1;
+        }
+        if (i_max == bit_mat.size()) { // O(1)
+            k++;
+        } else { // O(nm)
+            // O(m)
+            swap(bit_mat[h], bit_mat[i_max]);
+            // n-times --> O(nm)
+            for (int i = h + 1; i < bit_mat.size(); i++) {
+                if(bit_mat[i][k]){
+                    bit_mat[i] = bit_mat[i] ^ bit_mat[h];
+                }
+            }
+            // O(1)
+            h++;
+            k++;
+        }
+    }
+
+
+    // O(n*m)
+    // remove all zero-lines
+    bit_mat.erase(std::remove_if(bit_mat.begin(), bit_mat.end(), [](auto el){
+        return el.count() == 0;
+    }), bit_mat.end());
+
+
+    // bring into reduced echelon form
+    // n times --> O(nm)*n
+    for(int row = bit_mat.size() - 1; row >= 0; row--){
+
+        // this should work, as every line has a one (because all the others were removed before)
+        auto leading_one = bit_mat[row].find_first();
+        // diese Reihe von allen darüberliegenden Reihen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
+        for(int i = 0; i < row; i++){ // n times --> O(nm)
+            if(bit_mat[i][leading_one]){
+                bit_mat[i] = bit_mat[i] ^ bit_mat[row];
+            }
+        }
+    }
+}
 //total: O(nm * max(n, m))
 void Utils::gauss(std::vector<std::vector<int>>& matrix) {
     int h = 0;
@@ -35,12 +86,10 @@ void Utils::gauss(std::vector<std::vector<int>>& matrix) {
             swap(matrix[h], matrix[i_max]);
             // n-times --> O(nm)
             for (int i = h + 1; i < matrix.size(); i++) {
-                // O(1)
-                int f = matrix[i][k] / matrix[h][k];
-                // m-times -> O(m)
-                for (int j = k; j < matrix[0].size(); j++) {
-                    // O(1)
-                    matrix[i][j] = (matrix[i][j] + matrix[h][j] * f) % 2; // XOR
+                if(matrix[i][k]){
+                    for (int j = k; j < matrix[0].size(); j++) {
+                        matrix[i][j] = matrix[i][j] ^ matrix[h][j];
+                    }
                 }
             }
             // O(1)
@@ -65,8 +114,6 @@ void Utils::gauss(std::vector<std::vector<int>>& matrix) {
         // diese Reihe von allen darüberliegenden Reihen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
         for(int i = 0; i < row; i++){ // n times --> O(nm)
             if(matrix[i][leading_one]){
-                // Row_i = Row_i ^ Row_row
-                //O(m)
                 std::transform(matrix[i].begin(), matrix[i].end(), matrix[row].begin(), matrix[i].begin(), std::bit_xor<>());
             }
         }

@@ -19,8 +19,8 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
     int t = instance.k + 1;
 
     vector<int> return_value(0);
-    omp_set_num_threads(4);
-#pragma omp parallel default(none) shared(return_value, n_cols, n_rows, instance, t, attempts)
+    omp_set_num_threads(8);
+    #pragma omp parallel default(none) shared(return_value, n_cols, n_rows, instance, t, attempts)
     {
         while (return_value.empty()) {
             #pragma omp critical
@@ -29,9 +29,9 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
             // die Spalten von H permutieren und in H_perm abspeichern
             auto permutation = getRandomPermutation(n_cols);
 
-            vector<vector<int>> H_perm;
+            vector<boost::dynamic_bitset<>> H_perm;
             for (int row = 0; row < n_rows; row++) {
-                vector<int> r(n_cols);
+                boost::dynamic_bitset<> r(n_cols);
                 for (int col = 0; col < n_cols; col++) {
                     r[col] = instance.H[row][permutation[col]];
                 }
@@ -39,16 +39,17 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
             }
 
             // H_perm in reduzierte Spaltenform bringen
-            Utils::gauss(H_perm);
+            Utils::efficientGauss(H_perm);
 
             // find pivots
             vector<int> m_i;
             vector<int> k_i;
             for (int row = 0; row < n_rows; row++) {
-                auto col = distance(H_perm[row].begin(), find(H_perm[row].begin(), H_perm[row].end(), 1));
+                auto col = H_perm[row].find_first();
                 m_i.push_back(col);
                 k_i.push_back(row);
             }
+
             vector<int> not_m_i;
             for (int i = 0; i < n_cols; i++) {
                 if (std::find(m_i.begin(), m_i.end(), i) == m_i.end())

@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <boost/dynamic_bitset.hpp>
 
 class Utils {
 public:
@@ -32,6 +33,13 @@ public:
     static std::vector<std::vector<int>> transpose(std::vector<std::vector<int>>);
 
     static void print_matrix(const std::vector<std::vector<int>> &matrix);
+
+    static void efficientGauss(std::vector<std::vector<int>> &matrix);
+
+    static std::vector<boost::dynamic_bitset<>>
+    efficientGauss(std::vector<std::vector<int>> &matrix, const std::vector<int> &permutation);
+
+    static void efficientGauss(std::vector<boost::dynamic_bitset<>> &bit_mat);
 };
 
 
