@@ -98,8 +98,9 @@ class BruteforceSolver {
             resub(col - 1, mysolution, c, syndrome);
 
             // Abbrechen, wenn bereits eine Lösung gefunden wurde
-            if(!results.empty())
+            if (!results.empty()) {
                 return;
+            }
 
             auto mysolution2 = codeword;
             mysolution2[col] = 1;

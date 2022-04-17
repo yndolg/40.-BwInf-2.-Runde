@@ -43,28 +43,26 @@ std::string DPSolver::reconstruct(int max_moves) {
     calcBottomUp();
 
     int surplus = 0;
-    int pos = 0;
     int moves_left = max_moves;
     string s;
 
-    while (pos < word.size()) {
+    for (int pos = 0; pos < word.size(); pos++) {
         for (int i = 15; i >= 0; i--) {
             auto r = difference(State::digitFromChar(word[pos]), State::digitFromChar(HEX_DIGITS[i]));
             int added_moves = r.first;
             int added_surplus = r.second;
 
             int new_surplus = surplus + added_surplus;
-            int new_pos = pos + 1;
 
-            if (getDP(new_pos, new_surplus) + added_moves + max(0, added_surplus) <= moves_left) {
+            if (getDP(pos + 1, new_surplus) + added_moves + max(0, added_surplus) <= moves_left) {
                 surplus = new_surplus;
                 s += HEX_DIGITS[i];
-                pos = new_pos;
                 moves_left -= added_moves + max(0, added_surplus);
                 break;
             }
         }
     }
+
     return s;
 }
 
@@ -133,8 +131,9 @@ std::string DPSolver::getMoves(std::string old, std::string next) {
                 excess.emplace_back(i, j);
             }
         }
-        while(!(excess.empty()|| needed.empty())){
-            ss << excess.back().first << ", " << excess.back().second << " -> " << needed.back().first << ", " << needed.back().second
+        while (!(excess.empty() || needed.empty())) {
+            ss << excess.back().first << ", " << excess.back().second << " -> " << needed.back().first << ", "
+               << needed.back().second
                << "\n";
             old_state.positions[excess.back().first][excess.back().second] = false;
             old_state.positions[needed.back().first][needed.back().second] = true;
