@@ -34,11 +34,6 @@ public:
 
     static void print_matrix(const std::vector<std::vector<int>> &matrix);
 
-    static void efficientGauss(std::vector<std::vector<int>> &matrix);
-
-    static std::vector<boost::dynamic_bitset<>>
-    efficientGauss(std::vector<std::vector<int>> &matrix, const std::vector<int> &permutation);
-
     static void efficientGauss(std::vector<boost::dynamic_bitset<>> &bit_mat);
 };
 

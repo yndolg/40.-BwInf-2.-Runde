@@ -7,6 +7,7 @@
 #include "ISDSolver.h"
 
 #include <omp.h>
+
 using namespace std;
 
 std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
@@ -20,46 +21,55 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
 
     vector<int> return_value(0);
     omp_set_num_threads(8);
-    #pragma omp parallel default(none) shared(return_value, n_cols, n_rows, instance, t, attempts)
+#pragma omp parallel default(none) firstprivate(rng) shared(return_value, n_cols, n_rows, instance, t, attempts)
     {
+        vector<boost::dynamic_bitset<>> H_perm;
+        for (int row = 0; row < n_rows; row++) {
+            H_perm.emplace_back(n_cols, 0);
+        }
+        boost::dynamic_bitset<> pivots(n_cols, 0);
+        vector<int> m_i;
+        m_i.reserve(n_rows);
+        vector<int> k_i;
+        k_i.reserve(n_rows);
         while (return_value.empty()) {
-            #pragma omp critical
+#pragma omp critical
             attempts += 1;
 
             // die Spalten von H permutieren und in H_perm abspeichern
             auto permutation = getRandomPermutation(n_cols);
-
-            vector<boost::dynamic_bitset<>> H_perm;
             for (int row = 0; row < n_rows; row++) {
-                boost::dynamic_bitset<> r(n_cols);
                 for (int col = 0; col < n_cols; col++) {
-                    r[col] = instance.H[row][permutation[col]];
+                    H_perm[row][col] = instance.H[row][permutation[col]];
                 }
-                H_perm.push_back(r);
             }
 
             // H_perm in reduzierte Spaltenform bringen
             Utils::efficientGauss(H_perm);
 
             // find pivots
-            vector<int> m_i;
-            vector<int> k_i;
+            m_i.clear();
+            k_i.clear();
+            pivots.clear();
             for (int row = 0; row < n_rows; row++) {
                 auto col = H_perm[row].find_first();
+                pivots.set(col);
                 m_i.push_back(col);
                 k_i.push_back(row);
             }
 
-            vector<int> not_m_i;
+           /* vector<int> not_m_i;
             for (int i = 0; i < n_cols; i++) {
                 if (std::find(m_i.begin(), m_i.end(), i) == m_i.end())
                     not_m_i.push_back(i);
-            }
+            }*/
 
 
             // calculate all p-bit subsets of not_m_i, or less, if not_m_i.size() < 2
             int p = 1;
-            for (int p2: not_m_i) {
+            for (int p2 = 0; p2 < n_cols; p2 ++) {
+                if(pivots.test(p2))
+                    continue;
                 vector<int> syndrome(n_rows, 0);
 
                 for (int j = 0; j < n_rows; j++)
@@ -105,7 +115,7 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
 
 ISDSolver::ISDSolver() {
     std::random_device device;
-    rng = mt19937(device());
+    rng = mt19937(10);
 }
 
 vector<int> ISDSolver::getRandomPermutation(int n) {

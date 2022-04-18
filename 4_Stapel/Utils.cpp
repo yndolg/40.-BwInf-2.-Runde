@@ -31,7 +31,14 @@ void Utils::efficientGauss(std::vector<boost::dynamic_bitset<>>& bit_mat){
             k++;
         } else { // O(nm)
             // O(m)
-            swap(bit_mat[h], bit_mat[i_max]);
+
+            // XOR-Swap-Algorithmus, std::swap hat einen großen Overhead durch die temporäre Variable
+            if(h != i_max){
+                bit_mat[h] ^= bit_mat[i_max];
+                bit_mat[i_max] ^= bit_mat[h];
+                bit_mat[h] ^= bit_mat[i_max];
+            }
+
             // n-times --> O(nm)
             for (int i = h + 1; i < bit_mat.size(); i++) {
                 if(bit_mat[i][k]){
@@ -47,21 +54,20 @@ void Utils::efficientGauss(std::vector<boost::dynamic_bitset<>>& bit_mat){
 
     // O(n*m)
     // remove all zero-lines
-    bit_mat.erase(std::remove_if(bit_mat.begin(), bit_mat.end(), [](auto el){
+    /*bit_mat.erase(std::remove_if(bit_mat.begin(), bit_mat.end(), [](auto el){
         return el.count() == 0;
-    }), bit_mat.end());
+    }), bit_mat.end());*/
 
 
     // bring into reduced echelon form
     // n times --> O(nm)*n
     for(int row = bit_mat.size() - 1; row >= 0; row--){
-
         // this should work, as every line has a one (because all the others were removed before)
         auto leading_one = bit_mat[row].find_first();
         // diese Reihe von allen darüberliegenden Reihen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
         for(int i = 0; i < row; i++){ // n times --> O(nm)
             if(bit_mat[i][leading_one]){
-                bit_mat[i] = bit_mat[i] ^ bit_mat[row];
+                bit_mat[i] ^= bit_mat[row];
             }
         }
     }
@@ -88,7 +94,7 @@ void Utils::gauss(std::vector<std::vector<int>>& matrix) {
             for (int i = h + 1; i < matrix.size(); i++) {
                 if(matrix[i][k]){
                     for (int j = k; j < matrix[0].size(); j++) {
-                        matrix[i][j] = matrix[i][j] ^ matrix[h][j];
+                        matrix[i][j] ^=  matrix[h][j];
                     }
                 }
             }
