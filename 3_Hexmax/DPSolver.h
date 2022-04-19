@@ -32,11 +32,13 @@ private:
 public:
     std::string solve(const std::string &string, int i);
 
-    static std::string getMoves(std::string old, std::string next);
+    static std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>> getMoves(std::string old, std::string next);
 
     void calcBottomUp();
 
     [[nodiscard]] int memoKey(int pos, int d) const;
+
+    static std::string visualizeMoves(const std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>>& moves, const std::string& startingState);
 };
 
 

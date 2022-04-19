@@ -10,7 +10,7 @@ using namespace std;
 
 
 std::string State::visualize() const {
-    std::array<std::string, 5> lines;
+    std::array<std::string, 3> lines;
     for(auto c: positions){
         auto r = visualize_char(c);
         for(int i = 0; i < r.size(); i++){
@@ -24,8 +24,8 @@ std::string State::visualize() const {
     return result;
 }
 
-std::array<std::string, 5> State::visualize_char(std::bitset<7> c) {
-    std::array<std::string, 5> r;
+std::array<std::string, 3> State::visualize_char(std::bitset<7> c) {
+    std::array<std::string, 3> r;
 
     if(c[0] && c[5]){
         r[0].append("┏");
@@ -37,45 +37,37 @@ std::array<std::string, 5> State::visualize_char(std::bitset<7> c) {
         r[0].append(" ");
     }
 
-    r[1].append(c[5] ? "┃" : " ");
-
     if(c[5] && c[6] && c[4]){
-        r[2].append("┣");
+        r[1].append("┣");
     }else if(c[4] && c[6]){
-        r[2].append("┏");
+        r[1].append("┏");
     }else if(c[5] && c[6]){
-        r[2].append("┗");
+        r[1].append("┗");
     }else if(c[6]){
-        r[2].append("╺");
+        r[1].append("╺");
     }else if(c[5] && c[4]){
-        r[2].append("┃");
+        r[1].append("┃");
     }else if(c[5] || c[4]){
-        r[2].append(c[5] ? "╹": "╻");
+        r[1].append(c[5] ? "╹": "╻");
+    }else{
+        r[1].append(" ");
+    }
+
+    if(c[3] && c[4]){
+        r[2].append("┗");
+    }else if(c[3]){
+        r[2].append("╺");
+    }else if(c[4]){
+        r[2].append("╹");
     }else{
         r[2].append(" ");
     }
 
-    r[3].append(c[4] ? "┃" : " ");
-
-
-    if(c[3] && c[4]){
-        r[4].append("┗");
-    }else if(c[3]){
-        r[4].append("╺");
-    }else if(c[4]){
-        r[4].append("╹");
-    }else{
-        r[4].append(" ");
-    }
-
     // middle part
-    for(int i = 0; i < 3; i++){
-        r[0].append(c[0] ? "━": " ");
-        r[1].append(" ");
-        r[2].append(c[6] ? "━": " ");
-        r[3].append(" ");
-        r[4].append(c[3] ? "━": " ");
-    }
+    r[0].append(c[0] ? "━": " ");
+    r[1].append(c[6] ? "━": " ");
+    r[2].append(c[3] ? "━": " ");
+
 
     // right part
     if(c[0] && c[1]){
@@ -88,34 +80,30 @@ std::array<std::string, 5> State::visualize_char(std::bitset<7> c) {
         r[0].append(" ");
     }
 
-    r[1].append(c[1] ? "┃" : " ");
-
     if(c[1] && c[6] && c[2]){
-        r[2].append("┫");
+        r[1].append("┫");
     }else if(c[1] && c[6]){
-        r[2].append("┛");
+        r[1].append("┛");
     }else if(c[2] && c[6]){
-        r[2].append("┓");
+        r[1].append("┓");
     }else if(c[6]){
-        r[2].append("╸");
+        r[1].append("╸");
     }else if(c[1] && c[2]){
-        r[2].append("┃");
+        r[1].append("┃");
     }else if(c[1] || c[2]){
-        r[2].append(c[1] ? "╹": "╻");
+        r[1].append(c[1] ? "╹": "╻");
     }else{
-        r[2].append(" ");
+        r[1].append(" ");
     }
 
-    r[3].append(c[2] ? "┃" : " ");
-
     if(c[3] && c[2]){
-        r[4].append("┛");
+        r[2].append("┛");
     }else if(c[3]){
-        r[4].append("╸");
+        r[2].append("╸");
     }else if(c[2]){
-        r[4].append("╹");
+        r[2].append("╹");
     }else{
-        r[4].append(" ");
+        r[2].append(" ");
     }
     return r;
 }

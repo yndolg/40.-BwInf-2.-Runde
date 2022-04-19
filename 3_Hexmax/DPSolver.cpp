@@ -27,12 +27,6 @@ std::string DPSolver::solve(const std::string &string, int i) {
 
     auto r = reconstruct(i);
 
-    int c = 0;
-    for (auto x: memo)
-        if (x == -1)
-            c += 1;
-
-    cout << "Cache fill: " << c << "/" << memo.size() << "\n";
     return r;
 }
 
@@ -110,19 +104,59 @@ pair<int, int> DPSolver::difference(std::bitset<7> c1, std::bitset<7> c2) {
     }
 }
 
-std::string DPSolver::getMoves(std::string old, std::string next) {
+std::string DPSolver::visualizeMoves(const vector<pair<pair<int, int>, pair<int, int>>>& moves, const string& orig){
+    stringstream ss;
+    auto old_state = State::fromString(orig);
+    ss << old_state.visualize();
+    for(const auto& move: moves){
+        std::string arrow = " ";
+        const auto& from = move.first;
+        const auto& to = move.second;
+        for (int i = 0; i < old_state.positions.size(); i++) {
+            if (i == from.first) {
+                if (from.first < to.first) {
+                    arrow += " ┗━━";
+                } else if (from.first == to.first) {
+                    arrow += " ┃ ";
+                } else if (from.first > to.first) {
+                    arrow += "━┛";
+                }
+            } else if (i == to.first) {
+                if (from.first < to.first) {
+                    arrow += "━┓  ";
+                } else if (from.first > to.first) {
+                    arrow += " ┏━━";
+                }
+            } else if(i > min(to.first, from.first) && i < max(to.first, from.first)){
+                arrow += "━━━━";
+            } else {
+                arrow += "    ";
+            }
+        }
+        /*ss << excess.back().first << ", " << excess.back().second << " -> " << needed.back().first << ", "
+           << needed.back().second
+           << "\n";*/
+        ss << arrow << endl;
+        old_state.positions[from.first][from.second] = false;
+        old_state.positions[to.first][to.second] = true;
+        ss << old_state.visualize();
+    }
+    return ss.str();
+}
+
+vector<pair<pair<int, int>, pair<int, int>>> DPSolver::getMoves(std::string old, std::string next) {
     vector<pair<int, int>> excess;
     vector<pair<int, int>> needed;
 
     auto old_state = State::fromString(old);
     auto new_state = State::fromString(next);
 
-    if (old.length() != next.length())
-        return "impossible";
-    cout << old_state.visualize();
+    if (old.length() != next.length()){
+        cout << "Umlegung nicht möglich, unterschiedliche Zahl an Stellen.\n";
+        return {};
+    }
 
-    stringstream ss;
-
+    vector<pair<pair<int, int>, pair<int, int>>> r;
     for (int i = 0; i < old.length(); i++) {
         for (int j = 0; j < 7; j++) {
             if (new_state.positions[i][j] && !old_state.positions[i][j]) {
@@ -132,20 +166,16 @@ std::string DPSolver::getMoves(std::string old, std::string next) {
             }
         }
         while (!(excess.empty() || needed.empty())) {
-            ss << excess.back().first << ", " << excess.back().second << " -> " << needed.back().first << ", "
-               << needed.back().second
-               << "\n";
-            old_state.positions[excess.back().first][excess.back().second] = false;
-            old_state.positions[needed.back().first][needed.back().second] = true;
-            ss << old_state.visualize();
+            r.emplace_back(excess.back(), needed.back());
             excess.pop_back();
             needed.pop_back();
         }
-
     }
-    if (!(needed.empty() && excess.empty()))
-        return "impossible";
-    return ss.str();
+    if(!excess.empty() || !needed.empty()){
+        cout << "Umlegung nicht möglich, unterschiedliche Anzahl an Stäbchen.\n";
+        return {};
+    }
+    return r;
 }
 
 int DPSolver::getDP(int pos, int d) {
@@ -160,3 +190,4 @@ int DPSolver::getDP(int pos, int d) {
 int DPSolver::memoKey(int pos, int d) const {
     return (pos * (2 * max_moves + 1)) + d + max_moves;
 }
+

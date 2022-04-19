@@ -41,12 +41,15 @@ int main(int argc, char **argv) {
     vector<vector<int>> solutions;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
+    int attempts = 0;
     if (string("isd") == argv[1]) {
+
+        ISDSolver s;
+        solutions = s.solve(instance);
+        attempts = s.attempts;
+
         cout << "Lösungsverfahren: Information-Set-Decoding\n";
-        for(int i = 0; i < 1000; i++){
-            ISDSolver s;
-            solutions = s.solve(instance);
-        }
+
     } else if (string("bruteforce") == argv[1]) {
         cout << "Lösungsverfahren: Brute-Force\n";
         // Auswählen, welche größte die Bitsets bei der Berechnung haben, da die Größe zur Compile-Zeit
@@ -94,4 +97,6 @@ int main(int argc, char **argv) {
     }
     std::cout << "Das Lösen hat "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms gedauert." << std::endl;
+    cout << "Attempts: " << attempts << endl;
+    cout << "Attempts/sec: " << (double)attempts / (std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()/1000.) << endl;
 }

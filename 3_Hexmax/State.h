@@ -14,7 +14,7 @@ class State {
 public:
     std::vector<std::bitset<7>> positions;
     std::string visualize() const;
-    static std::array<std::string, 5> visualize_char(std::bitset<7> c);
+    static std::array<std::string, 3> visualize_char(std::bitset<7> c);
 
     static State fromString(const std::string& s);
     long long int getValue();
