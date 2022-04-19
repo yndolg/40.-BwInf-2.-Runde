@@ -3,7 +3,7 @@
 //
 
 #include "DPSolver.h"
-#include "State.h"
+#include "Zustand.h"
 
 #include <utility>
 #include <string>
@@ -25,7 +25,7 @@ std::string DPSolver::solve(const std::string &ursprung, int i) {
 
     word_digits.reserve(word.size());
     for (char c: word) {
-        word_digits.push_back(State::digitFromChar(c));
+        word_digits.push_back(Zustand::digitFromChar(c));
     }
 
     memo = vector<int>((ursprung.size() + 1) * (1 + 2 * max_umlegungen), -1);
@@ -46,8 +46,8 @@ std::string DPSolver::rekonstruiere() {
     string s;
     for (int pos = 0; pos < word.size(); pos++) {
         for (int i = 15; i >= 0; i--) {
-            auto r = unterschied(State::digitFromChar(word[pos]), State::digitFromChar(HEX_DIGITS[i]));
-            if (getDP(pos + 1, ueberschuss + r.second) + r.first <= umlegungen) {
+            auto r = unterschied(Zustand::digitFromChar(word[pos]), Zustand::digitFromChar(HEX_DIGITS[i]));
+            if (getMemo(pos + 1, ueberschuss + r.second) + r.first <= umlegungen) {
                 ueberschuss = ueberschuss + r.second;
                 s += HEX_DIGITS[i];
                 umlegungen -= r.first;
@@ -77,9 +77,9 @@ void DPSolver::dpVorberechnen() {
 
             int min_v = INFINITY;
             for (int i = 15; i >= 0; i--) {
-                auto r = unterschied(word_digits[pos], State::digitFromNumber(i));
+                auto r = unterschied(word_digits[pos], Zustand::digitFromNumber(i));
 
-                auto needed_moves = getDP(pos + 1, surplus + r.second) + r.first;
+                auto needed_moves = getMemo(pos + 1, surplus + r.second) + r.first;
                 if (needed_moves < min_v) {
                     min_v = needed_moves;
                 }
@@ -108,7 +108,7 @@ pair<int, int> DPSolver::unterschied(std::bitset<7> c1, std::bitset<7> c2) {
  * Gibt den Wert aus 'memo' aus. Liegt der Wert außerhalb des relevanten
  * Bereichs, wird INFINITY zurückgegeben.
  */
-int DPSolver::getDP(int pos, int d) {
+int DPSolver::getMemo(int pos, int d) {
     // Benutzt bereits zu viele Umlegungen. Der Wert muss nicht in 'memo'
     // gespeichert werden.
     if (abs(d) > max_umlegungen)
@@ -130,8 +130,8 @@ vector<pair<pair<int, int>, pair<int, int>>> DPSolver::getMoves(const std::strin
     vector<pair<int, int>> excess;
     vector<pair<int, int>> needed;
 
-    auto alt_state = State::fromString(alt);
-    auto ziel_state = State::fromString(ziel);
+    auto alt_state = Zustand::fromString(alt);
+    auto ziel_state = Zustand::fromString(ziel);
 
     if (alt.length() != ziel.length()) {
         cout << "Umlegung nicht möglich, unterschiedliche Zahl an Stellen.\n";
@@ -141,9 +141,9 @@ vector<pair<pair<int, int>, pair<int, int>>> DPSolver::getMoves(const std::strin
     vector<pair<pair<int, int>, pair<int, int>>> r;
     for (int i = 0; i < alt.length(); i++) {
         for (int j = 0; j < 7; j++) {
-            if (ziel_state.positions[i][j] && !alt_state.positions[i][j]) {
+            if (ziel_state.stellen[i][j] && !alt_state.stellen[i][j]) {
                 needed.emplace_back(i, j);
-            } else if (!ziel_state.positions[i][j] && alt_state.positions[i][j]) {
+            } else if (!ziel_state.stellen[i][j] && alt_state.stellen[i][j]) {
                 excess.emplace_back(i, j);
             }
         }

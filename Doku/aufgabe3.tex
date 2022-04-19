@@ -237,8 +237,45 @@ Nun hat Severins lehrerin eine weitere Aufgabe: er soll nicht nur die größtmö
 
 
 \section{Umsetzung}
-Die Lösung wurde in \texttt{C++} implementiert. 
+Die Lösung wurde in \texttt{C++} implementiert. Die drei Algorithmen sind in der Klasse \lstinline{DPSolver} implementiert. Die Datei \texttt{main.cpp} liest die Argumente und Problemdefinition ein, ruft den \lstinline{DPSolver} auf und gibt das Ergebnis aus. 
 
+Eine mögliche Belegung wird durch die Klasse \lstinline{Zustand} modelliert. 
+Jede Einzelne Stelle kann effizient als \lstinline{std::bitset<7>} dargestellt werden. 
+Abbildung \ref{fig:indizes} zeigt, welche Bits zu welcher Position gehören.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \draw[gray,line width = 2pt] (0.1, 0) -- (0.9, 0) node [midway, below, black] {3};
+        \draw[gray,line width = 2pt] (0.1, 1) -- (0.9, 1) node [midway,above, black] {6};
+        \draw[gray,line width = 2pt] (0.1, 2) -- (0.9, 2) node [midway,above,black] {0};
+        \draw[gray,line width = 2pt] (0, 0.1) -- (0, 0.9)node [midway,left, black] {4};
+        \draw[gray,line width = 2pt] (0, 1.1) -- (0, 1.9)node [midway,left, black] {5};
+        \draw[gray,line width = 2pt] (1, 0.1) -- (1, 0.9)node [midway,right, black] {2};
+        \draw[gray,line width = 2pt] (1, 1.1) -- (1, 1.9)node [midway,right, black] {1};
+    \end{tikzpicture}
+    \caption[]{Nummerierung der Segmente}
+    \label[]{fig:indizes}
+\end{figure}
+
+Die \lstinline{Klasse} enthält außerdem Funktionen zur Ein- und Ausgabe von Zuständen. Beim Einlesen müssen Hex-Ziffern in Belegungen der sieben Segmente umgewandelt werden. Dazu wird die Tabelle \lstinline{STAEBCHEN} verwendet, die für jede Ziffer die Belegung, als Hex-Wert encodiert, enthält. 
+Durch Suchen der Belegungen in \lstinline{STAEBCHEN} kann ein Zustand zurück in eine normale Hex-Zahl umgewandelt werden. 
+Für die Ausgabe der Zwischenzustände ist es allerdings nötig, auch Zustände auszugeben, die sich aktuell nicht in eine normale Hex-Zahl umwandeln lassen.
+Um diese dennoch im Terminal ausgeben zu können werden die Rahmenzeichen des Unicode-Zeichensatzes verwendet, um alle sieben Segmente kompakt darstellen zu können.
+Die Methoden \lstinline{visualisiereZahl()} und \lstinline{visualisiereZiffer} stellen eine Ziffer bzw. eine ganze Zahl über Rahmenzeichen dar. 
+Die Funktion \lstinline{visualisiereZiffer} gibt die drei Zeilen der Ziffer als einzelne Strings zurück, sodass mehrere Ziffern aneinandergefügt werden können.
+Die Methode \lstinline{visualisiereUmlegungen} visualisiert dann alle Zwischenzustände, die entstehen, wenn man die gegenenen Umlegungen durchführt. Zusätzlich werden Linien hinzugefügt, die zeigen, von welcher Stelle zu welcher Stelle das Stäbchen bewegt wurde. 
+
+Nun zur Implementation des eigentlichen Lösungsverfahrens. 
+Die \lstinline{solve()}-Funktion  der Klasse \lstinline{DPSolver} initialisiert die Variablen und ruft dann die Methoden \lstinline{dpVorberechen()} und \lstinline{rekonstruiere()}  auf, die Algorithmus \ref*{alg:precalc} bzw. Algorithmus \ref{alg:reconstruct} implementieren.
+Als Memoization-Tabelle wird ein Vektor verwendet, die Funktion \lstinline{memoKey(int pos, int d)} gibt an an, an welcher Position im Vektor ein Wert gespeichert ist. 
+Zusätzlich wird die Funktion \lstinline{getMemo} verwendet, um auf die Werte im \lstinline{memo}-Vektor zuzugreifen. 
+So kann gewährleistet werden, dass für Werte, die zu viele Umlegungen verwenden $\infty$ zurückgegeben wird, ohne diese Werte extra zu speichern. 
+Die Funktion \lstinline{unterschied(x1, x2)} gibt sowohl $d(x_1, x_2)$ als auch $n(x_1, x_2)$ in einem \lstinline{std::pair<int, int>} zurück. 
+Ansonsten folgt die Implementation der beiden Funktionen dem oben beschriebenen Pseudocode. 
+Algorithmus \ref{alg:moves} ist in \lstinline{getMoves()} implementiert. 
+Die Umlegungen werden als Vektor von Paaren von Positionen zurückgegeben.
+Eine Position ist dabei ebenfalls ein Paar, der erste Wert gibt die Stelle und der zweite Wert die Positon innerhalb der Stelle nach Abbildung \ref{fig:indizes} an.
 \section{Beispiele}
 Genügend Beispiele einbinden! Die Beispiele von der BwInf-Webseite sollten hier diskutiert werden, aber auch eigene Beispiele sind sehr gut – besonders wenn sie Spezialfälle abdecken. Aber bitte nicht 30 Seiten Programmausgabe hier einfügen!
 

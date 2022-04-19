@@ -9,14 +9,14 @@
 #include <algorithm>
 #include <array>
 
-#include "State.h"
+#include "Zustand.h"
 
 using namespace std;
 
-std::string State::visualize() const {
+std::string Zustand::visualisiereZahl() const {
     std::array<std::string, 3> lines;
-    for (auto c: positions) {
-        auto r = visualize_char(c);
+    for (auto c: stellen) {
+        auto r = visualisiereZiffer(c);
         for (int i = 0; i < r.size(); i++) {
             lines[i] += " " + r[i];
         }
@@ -38,7 +38,7 @@ std::string State::visualize() const {
  *     ┗━3━┛
  * Da das Ergebnis über 3 Zeilen geht, werden drei Strings zurückgegeben.
  */
-std::array<std::string, 3> State::visualize_char(std::bitset<7> c) {
+std::array<std::string, 3> Zustand::visualisiereZiffer(std::bitset<7> c) {
     std::array<std::string, 3> r;
 
     // erste Zeile
@@ -124,10 +124,10 @@ std::array<std::string, 3> State::visualize_char(std::bitset<7> c) {
     return r;
 }
 
-State State::fromString(const std::string &s) {
-    State state;
+Zustand Zustand::fromString(const std::string &s) {
+    Zustand state;
     for (auto c: s) {
-        state.positions.emplace_back(digitFromChar(c));
+        state.stellen.emplace_back(digitFromChar(c));
     }
     return state;
 }
@@ -138,15 +138,15 @@ State State::fromString(const std::string &s) {
  * bewegt wurde.
  */
 string
-State::visualisiereUmlegungen(const vector<pair<pair<int, int>, pair<int, int>>> &umlegungen, const string &vorher) {
+Zustand::visualisiereUmlegungen(const vector<pair<pair<int, int>, pair<int, int>>> &umlegungen, const string &vorher) {
     stringstream ss;
-    auto vorher_state = State::fromString(vorher);
-    ss << vorher_state.visualize();
+    auto vorher_state = Zustand::fromString(vorher);
+    ss << vorher_state.visualisiereZahl();
     for (const auto &move: umlegungen) {
         string pfeil = " ";
         const auto &from = move.first;
         const auto &to = move.second;
-        for (int i = 0; i < vorher_state.positions.size(); i++) {
+        for (int i = 0; i < vorher_state.stellen.size(); i++) {
             if (i == from.first) {
                 if (from.first < to.first) {
                     pfeil += " ┗━━";
@@ -169,9 +169,9 @@ State::visualisiereUmlegungen(const vector<pair<pair<int, int>, pair<int, int>>>
         }
 
         ss << pfeil << endl;
-        vorher_state.positions[from.first][from.second] = false;
-        vorher_state.positions[to.first][to.second] = true;
-        ss << vorher_state.visualize();
+        vorher_state.stellen[from.first][from.second] = false;
+        vorher_state.stellen[to.first][to.second] = true;
+        ss << vorher_state.visualisiereZahl();
     }
     return ss.str();
 }

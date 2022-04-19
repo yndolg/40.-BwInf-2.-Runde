@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <iomanip>
 #include "TSPSolver.h"
-#include "State.h"
+#include "Zustand.h"
 #include "DPSolver.h"
 
 using namespace std;
@@ -21,7 +21,7 @@ TSPSolver::solve(const std::string &from, const std::string &to) {
 
     vector<Individuum> population;
 
-    auto from_state = State::fromString(from);
+    auto from_state = Zustand::fromString(from);
 
     // Umlegungen des Greedy-Algorithmus als Ausgangspunkt verwenden
     auto moves_greedy = DPSolver::getMoves(from, to);
@@ -128,9 +128,9 @@ TSPSolver::Individuum TSPSolver::mutate(const TSPSolver::Individuum &individuum)
 /*
  * Überprüft, ob bei den Umlegungen eine Stelle vollständig geleert wird
  */
-bool TSPSolver::is_valid(TSPSolver::Individuum ind, const State &old_state) {
+bool TSPSolver::is_valid(TSPSolver::Individuum ind, const Zustand &old_state) {
     vector<int> counts;
-    for (const auto &pos: old_state.positions) {
+    for (const auto &pos: old_state.stellen) {
         counts.push_back(pos.count());
     }
     for (int i = 0; i < ind.size(); i += 2) {

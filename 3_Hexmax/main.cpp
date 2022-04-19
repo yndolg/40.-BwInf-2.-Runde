@@ -2,7 +2,7 @@
 #include <fstream>
 #include "DPSolver.h"
 #include "TSPSolver.h"
-#include "State.h"
+#include "Zustand.h"
 
 using namespace std;
 
@@ -58,14 +58,14 @@ int main(int argc, char **argv) {
         TSPSolver tsp_solver;
         auto moves = tsp_solver.solve(s, r);
         cout << "Umlegungen, um zu dieser Hex-Zahl zu gelangen: \n";
-        cout << State::visualisiereUmlegungen(moves, s);
+        cout << Zustand::visualisiereUmlegungen(moves, s);
         auto moves_greedy = DPSolver::getMoves(s, r);
         cout << "So muss sich Severin beim Umlegen " << TSPSolver::length(moves) << " Einheiten bewegen.\n";
         cout << "Mit dem Greedy-Algorithmus müsste er sich " << TSPSolver::length(moves_greedy) << " Einheiten bewegen.\n";
     } else if (print_steps == "greedy") {
         cout << "Umlegungen, um zu dieser Hex-Zahl zu gelangen: \n";
         auto moves = DPSolver::getMoves(s, r);
-        cout << State::visualisiereUmlegungen(moves, s);
+        cout << Zustand::visualisiereUmlegungen(moves, s);
     }
 
     return 0;

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 #include <random>
-#include "State.h"
+#include "Zustand.h"
 
 class TSPSolver {
     typedef std::vector<std::pair<int, int>> Individuum;
@@ -22,7 +22,7 @@ private:
 
     static float length(Individuum individuum);
 
-    static bool is_valid(Individuum ind, const State &state);
+    static bool is_valid(Individuum ind, const Zustand &state);
 
 public:
     TSPSolver();

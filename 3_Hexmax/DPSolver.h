@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "State.h"
+#include "Zustand.h"
 
 class DPSolver {
 private:
@@ -28,7 +28,7 @@ private:
 
     std::string rekonstruiere();
 
-    int getDP(int pos, int surplus);
+    int getMemo(int pos, int surplus);
 
     void dpVorberechnen();
 
