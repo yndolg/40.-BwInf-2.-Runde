@@ -53,7 +53,7 @@ TSPSolver::solve(const std::string &from, const std::string &to) {
         best = lengths[0].second;
 
         // Verteilung zur Selektion
-        geometric_distribution dist(0.01);
+        geometric_distribution dist(0.05);
         population.clear();
 
 

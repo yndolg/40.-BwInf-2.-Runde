@@ -276,6 +276,26 @@ Ansonsten folgt die Implementation der beiden Funktionen dem oben beschriebenen 
 Algorithmus \ref{alg:moves} ist in \lstinline{getMoves()} implementiert. 
 Die Umlegungen werden als Vektor von Paaren von Positionen zurückgegeben.
 Eine Position ist dabei ebenfalls ein Paar, der erste Wert gibt die Stelle und der zweite Wert die Positon innerhalb der Stelle nach Abbildung \ref{fig:indizes} an.
+
+\subsection{Erweiterung: Kurze Wege beim Umlegen}
+Der Algorithmus zum Finden von Umlegungen, bei denen sich möglichst wenig bewegt werden muss ist in der Klasse \lstinline{TSPSolver} implementiert. In der \lstinline{solve()}-Funktion findet sich der eigentliche Algorithmus. 
+Ein Individuum ist, wie bei der Lösungsidee beschreiben, eine Liste von Positionen, bei denen abwechselnd ein Stäbchen aufgenommen bzw. abgelegt wird. Eine Position ist, wie beim Greedy-Algorithmus ein \lstinline{std::pair<int, int>}, das sowohl die Stelle als auch die Position innerhalb der Stelle speichert. 
+In der \lstinline{length()} funktion wird die Länge des Weges für eine mögliche Lösung berechnet. 
+Dafür werden die Strecken zwischen den Segmenten addiert. 
+Um die Strecken genau berechnen zu können, ist es wichtig, die Positionen der Stäbchen in einem Koordinatensystem festzulegen. 
+Dafür wird jeweils der Mittelpunkt der Segmente verwendendet.
+Die Zeichen dafür sind eine Längeneinheit breit und zwei Längeneinheiten hoch.
+Im \lstinline{POSITIONS}-Vektor sind die $x$ und $y$ der Segmente gespeichert. 
+Die eigentliche Distanz zwischen zwei Stäbchen in der Zahl wird dann über den Satz des Pythagoras ermittelt. 
+
+Beim evolutionären Algorithmus spielt Zufall eine zentrale Rolle. 
+Um effizient pseudozufallszahlen generieren zu können wird der \lstinline{std::mt19937}-Zufallszahlengenerator aus dem \lstinline{random}-Header der C++-Standardbibliothek verwendet. 
+Für die Selektion nach Rang wird eine geometrische Verteilung aus der Standardbibliothek verwendet.
+
+Der Algorithmus ist von einigen Parametern abhängig, die im \lstinline{TSPSolver}-Objekt bearbeitet werden können. Standardmäßig wird eine Mutationsrate von $1\%$ und eine Populationsgröße von 100 Individuen verwendet. 
+Außerdem werden für jede Generation 10 Individuen der Vorgängergeneration übernommen und 10 neue Individuen generiert. Auch diese Parameter können angepasst werden. 
+
+
 \section{Beispiele}
 Genügend Beispiele einbinden! Die Beispiele von der BwInf-Webseite sollten hier diskutiert werden, aber auch eigene Beispiele sind sehr gut – besonders wenn sie Spezialfälle abdecken. Aber bitte nicht 30 Seiten Programmausgabe hier einfügen!
 
