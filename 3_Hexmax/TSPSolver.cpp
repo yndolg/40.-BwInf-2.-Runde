@@ -127,17 +127,32 @@ bool TSPSolver::is_valid(TSPSolver::Individuum ind, const State& old_state){
 }
 
 // Berechnet die Länge des Weges beim Umlegen
-int TSPSolver::length(TSPSolver::Individuum individuum) {
-    int len = 0;
+float TSPSolver::length(TSPSolver::Individuum individuum) {
+    float len = 0;
     pair<int, int> current_pos = individuum[0];
+    // Positionen der Stäbchen innerhalb einer Stelle
+    const vector<array<float, 2>> POSITIONS = {
+            {0.5, 0  },
+            {1  , 0.5},
+            {1  , 1.5},
+            {0.5, 2  },
+            {0  , 1.5},
+            {0  , 0.5},
+            {0.5, 1  }
+    };
     for(int i = 1; i < individuum.size(); i++){
-        len += abs(current_pos.first - individuum[i].first);
+        // Distanz über Satz des Pythagoras berechnen
+        auto start_pos = POSITIONS[current_pos.second];
+        start_pos[0] += current_pos.first;
+        auto end_pos = POSITIONS[individuum[i].second];
+        start_pos[0] += individuum[i].first;
+        len += sqrt(pow(end_pos[0]-start_pos[0], 2) + pow(end_pos[1]-start_pos[1], 2));
         current_pos = individuum[i];
     }
     return len;
 }
 
-int TSPSolver::length(const std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>>& moves) {
+float TSPSolver::length(const std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>>& moves) {
     Individuum ind;
     for(const auto move : moves){
         ind.push_back(move.first);

@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
         cout << "Umlegungen, um zu dieser Hex-Zahl zu gelangen: \n";
         cout << DPSolver::visualizeMoves(moves, s);
         auto moves_greedy = DPSolver::getMoves(s, r);
-        cout << "So muss sich Severin beim Umlegen " << TSPSolver::length(moves) << " Stellen bewegen.\n";
-        cout << "Mit dem Greedy-Algorithmus müsste er sich " << TSPSolver::length(moves_greedy) << " Stellen bewegen.\n";
+        cout << "So muss sich Severin beim Umlegen " << TSPSolver::length(moves) << " Einheiten bewegen.\n";
+        cout << "Mit dem Greedy-Algorithmus müsste er sich " << TSPSolver::length(moves_greedy) << " Einheiten bewegen.\n";
     } else if (print_steps == "greedy") {
         cout << "Umlegungen, um zu dieser Hex-Zahl zu gelangen: \n";
         auto moves = DPSolver::getMoves(s, r);

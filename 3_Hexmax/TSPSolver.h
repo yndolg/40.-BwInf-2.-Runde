@@ -18,7 +18,7 @@ public:
     TSPSolver();
     std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>> solve(const std::string& from, const std::string& to);
 
-    static int length(const std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>>& moves);
+    static float length(const std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>>& moves);
     // Anzahl der Mutationen
     float MUTATION_RATE = 0.01;
     // Größte der Population
@@ -32,7 +32,7 @@ private:
     void shuffle(Individuum& individuum);
 
     Individuum mutate(const Individuum& individuum);
-    static int length(Individuum individuum);
+    static float length(Individuum individuum);
 
     static bool is_valid(Individuum ind, const State& state);
 };

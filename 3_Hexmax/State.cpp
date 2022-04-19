@@ -24,7 +24,15 @@ std::string State::visualize() const {
     return result;
 }
 
+
 std::array<std::string, 3> State::visualize_char(std::bitset<7> c) {
+    /* Belegung:
+     *  ┏━0━┓
+     *  5   1
+     *  ┣━6━┫
+     *  4   2
+     *  ┗━3━┛
+     */
     std::array<std::string, 3> r;
 
     if(c[0] && c[5]){
