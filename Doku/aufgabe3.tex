@@ -9,7 +9,7 @@
 
 \section{Lösungsidee}
 \subsection{Modellierung}
-Gegeben ist ein Wort $w$ aus $x_0, x_1, ..., x_n$ Zeichen, die jeweils eine Stelle der Hexadezimalzal beschreiben, und eine Maximalzahl an Umlegungen $m$. Jedes Zeichen ist ein 7-Tupel, welches für jede Position im Zeichen angibt, ob sie aktiviert oder deaktiviert ist. 
+Gegeben ist ein Wort $w$ aus $x_1, x_2, ..., x_n$ Zeichen, die jeweils eine Stelle der Hexadezimalzal beschreiben, und eine Maximalzahl an Umlegungen $m$. Jedes Zeichen ist ein 7-Tupel, welches für jede Position im Zeichen angibt, ob sie aktiviert oder deaktiviert ist. 
 
 Gesucht ist nun das größte solche Wort, was sich mit maximal $m$ Umlegungen aus $w$ legen lässt.
 
@@ -42,8 +42,12 @@ Mit der Rekurrenz \ref{eq:rek} kann $f(p, e)$ für alle möglichen Werte bottom-
 \label{alg:precalc}
 \begin{algorithmic}[1]
     \Procedure{Vorberechnen}{$w, m$}
-    \State sei $dp[0, ..., n-1][-m, ..., m]$ ein neues Array
-    \For {$p \gets 0,...,n-1$}
+    \State sei $dp[1, ..., n+1][-m, ..., m]$ ein neues Array
+    \State $dp[n+1][-m, ..., m] \gets \begin{cases}
+        0 & \text{, falls } m = 0\\
+        \infty &\text{, falls } m \neq 0
+    \end{cases}$ \Comment{Initialisen der Basisfälle, das leere Wort}
+    \For {$p \gets n, ..., 1$}
         \For {$e \gets -m, ..., m$}
             \State{$dp[p][e] \gets \min_{x\in [0, 15]} f(p + 1, e + n(w_p, x)) + d(w_p, x) + \max(n(w_p, x), 0)$}
         \EndFor 
@@ -60,21 +64,18 @@ Ist $f(p, e)$ bekannt, kann die größte Zahl greedy rekonstruiert werden. Dazu 
     \begin{algorithmic}[1]
         \Procedure{Rekonstruktion}{$w, f$}
             \State $e \gets 0$ \Comment{Aktuell überschüssige Stäbe}
-            \State $p \gets 0$ \Comment{Aktuelle Position im Wort}
             \State $z \gets m$ \Comment{Noch übrige Umlegungen}
-
-            \State $s \gets "\,"$  \Comment{Das rekonstruierte Wort}
-        \While{$p < n$}
-            \For{$x \gets 0,...,F$}
+            \State $s \gets \epsilon$  \Comment{Das rekonstruierte Wort}
+        \For{$p \gets 1,...,n$}
+            \For{$x \gets F,...,0$}
                 \If{$f(p + 1, e + n(w_p, x)) + d(w_p) + \max(n(w_p, x), 0) \leq z$}
                     \State $e \gets e + n(w_p, x)$
                     \State $s \gets s + x$
-                    \State $p \gets p + 1$
                     \State $z \gets z - d(w_p) - \max(n(w_p, x), 0)$
                     \State \textbf{break}
                 \EndIf
             \EndFor
-        \EndWhile
+        \EndFor
         \State \textbf{return} $s$
         \EndProcedure
     \end{algorithmic}
@@ -88,7 +89,7 @@ Die Grundidee dafür ist es, alle Positionen zu finden, in denen ein Stäbchen b
         \Procedure{Umlegen}{$w_1, w_2$}
             \State $e \gets []$ \Comment{Positionen mit überschüssigem Stäbchen}
             \State $n \gets []$ \Comment{Positionen, die ein Stäbchen benötigen}
-        \For{$z \gets 0,..,n-1$} \Comment{über alle Zeichen iterieren}
+        \For{$z \gets 1,..,n$} \Comment{über alle Zeichen iterieren}
             \For{$i \gets 0,...,6 $} \Comment{über die sieben Segmente iterieren}
                 \If{Segment $i$ von Zeichen $z$ muss gesestzt werden}
                     \State $n$.push($(z, i)$)
@@ -153,28 +154,88 @@ Insgesamt hat Algorithmus \ref{alg:reconstruct} also einen Speicherbedarf von $\
 Algorithmus \ref{alg:moves} verwendet zwei Listen. Da jedes Segment nur einemal in eine der Listen eingefügt wird, können diese Zusammen niemals mehr als $7n = O(n)$ Speicher benötigen. 
 Die drei Algorithmen haben zusammen einen Speicherbedarf von $\Theta(n) + \Theta(nm) + O(n)= \Theta(nm)$.
 \subsection{Beweis der Richtigkeit}
-Nachdem Algorithmus \ref{alg:precalc} terminiert hat, für alle Werte von $0 < p < $ und $e$ 
+Zunächst wird die Richtigkeit von Algorithmus \ref*{alg:precalc} per Induktion bewiesen.
+Zur Erinnerung: $dp[p_0][e]$ soll die minimale Anzahl an Umlegungen sein, die benötigt werden, um aus dem Teilwort $w_{p_0}, ..., w_n$ und $e$ zusätzlichen Stäbchen eine valide Zahl zu erhalten.  
+In Zeile 3 werden die Werte für $n+1$, also das leere Wort gesetzt. Soll kein weiteres Stäbchen verwendet werden, so ist das leere Wort eine valide Zahl und es werden keine weiteren Umlegungen verwendet. 
+Sollen jedoch weitere Stäbchen verwendet werden, ist es nicht möglich, eine Valide Zahl zu bilden, da es laut Aufgabenstellung nicht erlaubt ist, weitere Stellen zu verwenden. Daher werden $\infty$ Umlegungen benötigt. 
+
+Für den Induktionsschritt wird angenommen, dass $dp$ für Werte $p < p_0$ bereits richtig ist und bewiesen, dass auch die Werte für $p_0$ richtig berechnet werden. 
+Angenommen, der Algoirhtmus funktioniert nicht und es gibt eine Möglichkeit, eine valide Zahl mit weniger Umlegungen als durch \ref*{eq:rek} gegben zu erstellen. 
+Jede mögliche valide Zahl muss an der Stelle $p_0$ eine Ziffer zwischen 0 und F haben. Jedes valide Wort benötigt also mindestens so viele Umlegungen, wie nötig werden, um die Stelle $p_0$ zu einer Ziffer umzulegen ($\min_ {x \in [0,15]} d(w_p, x)$). 
+Auch das Entfernen von Stäbchen ist eine Umlegung, sodass es jede Möglichkeit mindestens $\min_ {x \in [0,15]} d(w_p, x) + max(n,(w_p, x), 0)$ Umlegungen benötigt. 
+Damit eine valide Zahl entsteht, muss nun das Wort $w_{p_0+1}, ..., w_n$ mit $e + n(w_p, x)$ mit möglichst wenig Umlegungen in eine valide Hex-Zahl umgelegt werden. Daraus folgt, dass wenn $f(p_0+1, e)$ optimal ist, es keine Möglichkeit geben kann, die weniger als $f(p, e)$ Umlegungen benötigt und $f(p, e)$ damit optimal ist. 
+Das Problem hat also die sogenannte \textit{optimal substructure}.
+Daraus folgt, dass nach Iteration $i$ der For-Schleife in Zeile 4 $dp[p][e]$ für $n+1 > p > n-i$ korrekt ist. 
+Folglich ist $dp[p][e]$ nach allen $i = n$ Iterationen für alle $n+1 > p > 0$ und damit Algorithmus \ref*{alg:precalc} korrekt.  
+
+Algorithmus \ref*{alg:reconstruct} kann mit einem Ähnlichen Prinzip bewiesen werden. 
+Der Algorithmus soll die größte Hex-Zahl ausgeben, mit $\leq m$ Umlegungen aus dem Wort $w$ hergestellt werden kann. 
+Der Beweis erfolgt über eine Invariante: Nach $p$ Durchläufen der For-Schleife gilt (1) $s$ ist die maximale Zahl, die mit den ersten $p$ Stellen gebildet werden kann, (2) $e$ ist die Anzahl der überschüssigen Stäbchen, wenn die ersten $p$ Stellen zu $s$ umgelegt werden und (3) $z$ ist die Anzahl der noch übrigen Umlegungen.
+Mit $s = \epsilon$, $z = m$ und $e = 0$ gelten alle drei Bedingungen vor der ersten Iteration.
+
+In jeder Iteration wird die größte Stelle für die Stelle $p$ zu $s$ hinzugefügt, bei der es noch möglich ist, mit den danach noch übrigen Umlegungen das Wort $w_{p+1}, ..., w_n$ mit den dann übrigen Stäbchen zu einer validen Hexzahl umzulegen. 
+Die so entstandene Zahl ist die größtmögliche Zahl, die mit den ersten $p$ Stellen gebildet werden kann, da die ersten $p-1$ Stellen bereits die größtmögliche Zahl waren und der Stelle $p$ ebenfalls die größtmögliche Stelle zugewiesen wurde. 
+% TODO: optimal substructure besser begründen....
+Bedingung (1) ist also korrekt. Wurde eine Ziffer für Stelle $p$ ausgewählt, werden $e$ und $z$ entsprechend angepasst, sodass auch Bedingungen (2) und (3) richtig ist. 
+
+Folglich ist $s$ nach $n$-Iterationen die maximale Zahl, die in den ersten $n$ Stellen mit höchstens $m$ Umlegungen gebildet werden kann und Algorithmus \ref*{alg:reconstruct} korrekt.
+% TODO: vllt. noch begründen, warum eine stelle nie geleert wird
+
+Es folgt der Beweis für Algorithmus \ref*{alg:reconstruct}.
+Der Algorithmus erhält zwei Zahlen und soll, sofern dies möglich ist, eine Reihe von minimal vielen Umlegungen ausgebenn, um von der ersten Zahl zur zweiten zu gelangen. Außerdem soll beim durchführen dieser Umlegungen niemals eine Stelle der Zahl vollständig geleert werden. 
+Zunächst wird bewiesen, dass der Algorithmus eine minimale Reiehe von Umlegungen findet, sofern diese existiert. Eine Reihe von Umlegungen existiert genau dann, wenn beide Zahlen gleich viele Stäbchen verwenden. 
+Sei $e$ die Menge aller Positionen, in denen ein Stäbchen fehlt und $n$ die Menge der Positionen, in denen ein Stäbchen liegt, aber nicht liegen sollte. 
+Damit eine Umlegung möglich ist, muss also $|e|= |n|$ gelten. 
+Durch die Zeilen 6-11 werden alle Positionen, in denen ein Stäbchen fehlt oder hinzugefügt werden muss $e$ bzw. $n$ hinzugefügt.
+% TODO: Beweis, dass minmiale Lösung gefunden wird fertig stellen
+
+Nun bleibt zu zeigen, dass bei diesen Umlegungen eine Stelle niemals vollständig geleert wird.
+Um eine Position zwischen zwei Umlegungen vollständig zu leeren müssten zuerst alle Stäbchen der Stelle in andere Stellen verschoben werden, sodass die Stelle leer werden kann, und dann die nun benötigten Stäbchen aus anderen Stellen in diese Stelle bewegt werden. 
+Wenn eine Stelle komplett geeleert wird, kann es also keine Umlegung innerhalb dieser Stelle geben. 
+Da alle Ziffern mindestens ein Stäbchen verwenden, ist es immer möglich, ein Stäbchen innerhalb der Ziffer umzulegen und zu verhindern, dass die Stelle vollständig geleert wird. 
+In den Zeilen 5-12 werden alle fehlenden bzw. überschüssigen Stäbchen den Listen $e$ und $n$ am deren Ende hinzugefügt. 
+Da der Algorithmus in den Zeilen 13-17 die fehlenden bzw. überschüssigen Stellen vom Ende der Liste verwendet, wird immer eine umlegung innerhalb der Stelle durchgeführt, sofern dies möglich ist.
+Folglich wird beim Durchführen der durch den Algorithmus ausgegeben Umlegungen nie ein Zeichen vollständig geleert.  
+
+
 \subsection{Erweiterungen}
-\subsubsection{Kurze Wege beim Umlegen, vllt. sogar travelling salesman?}
-Nachdem Severin es nun geschafft hat, die größtmögliche Hex-Zahl zu finden möchte die Lehrerin, dass er die Umlegungen auf dem Tisch durchführt. Da die Zahl sehr groß ist, ist es wichtig, dass er sich beim Umwegen möglichst wenig bewegen muss. 
+\subsubsection{Kurze Wege beim Umlegen}
+Nachdem Severin es nun geschafft hat, die größtmögliche Hex-Zahl zu finden, möchte die Lehrerin, dass er die Umlegungen jetzt auch auf dem Tisch ausführt. Da die Zahl aber sehr groß ist, muss er sich dabei viel hin und herbewegen. Daher sucht Severin nun eine Möglichkeit, die Umlegungen durchzuführen, und sich dabei so wenig wie möglich zu bewegen. 
+Dabei kann er immer nur ein Stäbchen gleichzeitig in der Hand halten.
+Gesucht ist also eine Folge von abwechselnd Positionen, an denen ein Stab übrig ist und Positionen, an denen ein Stäbchen benötigt wird, bei der die Strecke möglichst gering ist und die alle Positionen besucht. 
+Jedem Stäbchen innerhalb einer Stelle wird dabei die Position des Mittelpunktes mit $x$- und $y$-Koordinate zugewiesen. 
+Zum Lösen dieses Problems, welches ein spezialfall des Problems des Handlungsreisenden (TSP) ist, wird ein genetischer Algorithus verwendet. 
+So wird nicht unbedingt die beste Lösung gefunden, da es sich um ein heuristisches Verfahren handelt. 
+Dafür kann der Algorithmus aber auch bei sehr großen Instanzen in angemessener Zeit eine akzeptable Lösung finden. 
+
+Evolutionäre Algorithmen sind Metaheuristiken zum Lösen von Optimierungsproblemen, die am Prozess der Evolution in der Natur inspiriert sind. 
+Mögliche Lösungen werden als Individuuen einer Population dargestellt, die zu beginn aus zufälligen Lösungen besteht. 
+Danach werden mehrere Generationen simuliert. 
+In jeder Generation wird dann die Fitness (also Qualität) aller Individuen der Population bestimmt.
+Aus den besten Individuen der letzten Generation werden dann bei der Selektion die Individuen der nächsten Generation erstellt. Dabei werden die Lösungen noch zufällig leicht verändert (Mutation), um die Mutation aus der Natur zu immitieren. 
+Optional kann auch aus zwei Eltern-Individuuen durch Crossover ein Individuum der nächsten Generation erstellt werden. 
+Nach einer bestimmten Anzahl an Generationen wird die beste bisher gefundene Lösung zu
+Für dieses Problem werden werden mögliche Lösungen als Liste von Positionen modelliert, die Severin in dieser Reihenfolge abgehen muss. 
+Bei jeder Position mit geradem Index wird ein Stäbchen aufgenommen und dann bei der nächsten Positon (mit ungeradem Index) abgelegt. 
+Bei der Mutation werden dann (potentiell mehrfach) zwei gerade bzw. zwei ungerade Positonen zufällig miteinander ausgetauscht. 
+Für jedes Individuum wird dann die Länge des Weges berechnet. 
+Dafür wird die Summe der euklidischen Distanzen der einzelnen Wege verwendet. 
+Schließlich werden alle Individuuen einer Generation sortiert.
+Die Selektion findet dann nach Rang statt, da so (gegenüber z.B. Roulette-Selektion )auch kleine Unterschiede in den Längen durchsetzen können. 
+Bei der Mutation muss zusätzlich noch die Bedingung beachtet werden, dass eine Stelle nie vollständig geleert werden kann.
+Ist dies der Fall, wird das Individuum verworfen und eine neue Mutation durchgeführt. 
+Zusätzlich wird der sogenannte Elitismus (eng. Elitsm) verwendet, um zu verhindern, dass sich die Lösungen über Generationen verschlechtern. Dafür werden die besten $n$ Individuen aus der letzten Generation ohne Mutation in die nächste übernommen. 
+Außerdem werden in jeder Generation eine geringe Menge von vollständig zufällig generierten Individuuen hinzugefügt. 
+Das kann dem Algorithmus helfen, aus einem lokalen Minimum zu entkommen. 
+Außderdem wird der Population zu Beginn bereits die Lösung von Algorithmus \ref{alg:moves} hinzugefügt. So kann der Algorithmus diese Lösung als Ausgangspunkt verwenden und verbessern. 
+In der Praxis findet der Evolutionäre Algorithmus in allen Beispielen von der BWINF-Website kürzere Umlegungen als Algorithmus \ref{alg:moves}
+
+
 \subsubsection{Möglichst nah an Zielzahl}
 Nun hat Severins lehrerin eine weitere Aufgabe: er soll nicht nur die größtmögliche Zahl finden, sondern eine, die Möglichst nah an einer Zielzahl liegt. Der Algorithmus kann dadurch Greedy-Bleiben, die Auswahl wird jedoch deutlich komplexer.
-\subsubsection{Bestimmte Stellen sind nicht veränderbar}
-Einige Stäbchen liegen schon seit sehr langer Zeit auf ihrem Platz und sollen deshalb auf gar keinen Fall bewegt werden. Dennoch möchte Severin die größtmögliche Zahl finden. 
-[Algorithmus funktioniert fast unverändert, mann müsste nur filten, welche Buchstaben erlaubt sind]
-\subsubsection{Stellen können entfernt werden}
-Dadurch wird es immer schlechter.... 
-\subsubsection{Statt maximaler Zahl: maximaler Term}
-Ich hab absolut keine Ahnung, wie ich die Operatoren ausdrücken soll. Vllt. mit 14-Segment anzeigen, als weitere ergänzung
-\subsubsection{erlauben, zusätzliche Stellen einzufügen}
-Der beste weg wäre es, einsen vorne heranzuschreiben, um eine Längere Zahl zu erhalten, könnte aber trotzdem interessant sein.
-\subsubsection{Nicht nur umlegungen, sondern auch dazulegen, wegnehmen}
-Durchaus interessant, hat aber keine Auswirkungen auf den Algorithmus...
-\subsubsection{Andere Zahlensystem, vllt. sogar Römische Zahlen}
-Nur auf 14-Segment-Anzeigen 
-\subsubsection{Dot-Matrix-Display}
-Eigentlich echt eine Interessante Idee...
-\label[]{sec:prove}
+
+
+
 \section{Umsetzung}
 Die Lösung wurde in \texttt{C++} implementiert. 
 

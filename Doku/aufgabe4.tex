@@ -177,6 +177,16 @@ Die Suche kann optimiert werden, indem abgebrochen wird, wenn es nicht mehr genu
 
 Schlussendlich wird nacheinander 0 und 1 für die aktuelle Variable eingesetzt und die Methode rekursiv für die nächste Variable aufgerufen. 
 
+Zum Compilieren des Codes wird ein \texttt{C++-14}-fähiger Compiler benötigt.
+Des Weitern wird OpenMP für die Parralellisierung verwendet, sodass der Compiler dies ebenfalls untersützen sollte. Als Build-System wird CMake verwendet. 
+Der Code kann wie üblich über 
+\begin{lstlisting}[language=bash]
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build . 
+\end{lstlisting}    
+kompiliert und dann mit \lstinline[language=bash]{./stapel [algorithmus] [Pfad]} ausgeführt werden, wobei zwischen den Algorithmen \lstinline{isd} für Information-Set-Decding und \lstinline{bruteforce} für den Bruteforce-Ansatz ausgewählt werden kann. Der Pfad sollte auf die zu lösende Eingabedatei zeigen. Der Code wurde unter Ubuntu 20.04. getestet.
 \section{Beispiele}
 Genügend Beispiele einbinden! Die Beispiele von der BwInf-Webseite sollten hier diskutiert werden, aber auch eigene Beispiele sind sehr gut – besonders wenn sie Spezialfälle abdecken. Aber bitte nicht 30 Seiten Programmausgabe hier einfügen!
 
