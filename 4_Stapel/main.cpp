@@ -13,7 +13,7 @@
 
 using namespace std;
 
-string usage = "Benutzung: ./stapel [Algorithmus] [Dateipfad] \r\n"
+string verwendung = "Benutzung: ./stapel [Algorithmus] [Dateipfad] \r\n"
                "  Algorithmen:\r\n"
                "   'isd': information-set-decoding\r\n"
                "   'bruteforce': Bruteforce-Algorithmus\r\n";
@@ -21,14 +21,14 @@ string usage = "Benutzung: ./stapel [Algorithmus] [Dateipfad] \r\n"
 int main(int argc, char **argv) {
 
     if (argc != 3) {
-        cout << usage;
+        cout << verwendung;
         return 1;
     }
 
 
     ifstream ifs(argv[2]);
     if(!ifs.good()){
-        cout << "Die Problemdefinition konnte nicht eingelesen werden.\r\n" << usage;
+        cout << "Die Problemdefinition konnte nicht eingelesen werden.\r\n" << verwendung;
         ifs = ifstream("/media/data/schule/BWINF/40_2/4_Stapel/Eingabe/stapel4.txt");
     }
 
@@ -43,13 +43,11 @@ int main(int argc, char **argv) {
 
     int attempts = 0;
     if (string("isd") == argv[1]) {
-
         ISDSolver s;
         solutions = s.solve(instance);
         attempts = s.attempts;
 
         cout << "Lösungsverfahren: Information-Set-Decoding\n";
-
     } else if (string("bruteforce") == argv[1]) {
         cout << "Lösungsverfahren: Brute-Force\n";
         // Auswählen, welche größte die Bitsets bei der Berechnung haben, da die Größe zur Compile-Zeit
@@ -72,7 +70,7 @@ int main(int argc, char **argv) {
         }
 
     } else {
-        cout << usage;
+        cout << verwendung;
         return 1;
     }
 
@@ -95,8 +93,11 @@ int main(int argc, char **argv) {
     }else{
         cout << "Es gibt keine Lösung.\n";
     }
+
     std::cout << "Das Lösen hat "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << " ms gedauert." << std::endl;
-    cout << "Attempts: " << attempts << endl;
-    cout << "Attempts/sec: " << (double)attempts / (std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()/1000.) << endl;
+
+    if(attempts != 0){
+        cout << "Der Information-Set-Decoding-Algorithmus hat " << attempts << " Versuche benötigt." << endl;
+    }
 }

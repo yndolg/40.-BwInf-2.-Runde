@@ -15,54 +15,45 @@
 
 using namespace std;
 
+/*
+ * Effizientere Variante des Gauss-Verfahrens, die Bitsets verwendet.
+ * Im ISD-Algorithmus wird die Laufzeit vom Gauss-Algorithmus dominiert,
+ * sodass die Optimierungen lohnenswert sind.
+ */
 void Utils::efficientGauss(std::vector<boost::dynamic_bitset<>>& bit_mat){
     int h = 0;
     int k = 0;
-
-    // m times --> O(nm^2)
     while (h < bit_mat.size() && k < bit_mat[0].size()) {
         int i_max = h;
-
-        // O(n)
         while (i_max < bit_mat.size() && bit_mat[i_max][k] == 0) {
             i_max += 1;
         }
-        if (i_max == bit_mat.size()) { // O(1)
+        if (i_max == bit_mat.size()) {
             k++;
-        } else { // O(nm)
-            // O(m)
-
+        } else {
             // XOR-Swap-Algorithmus, std::swap hat einen großen Overhead durch die temporäre Variable
             if(h != i_max){
                 bit_mat[h] ^= bit_mat[i_max];
                 bit_mat[i_max] ^= bit_mat[h];
                 bit_mat[h] ^= bit_mat[i_max];
             }
-
-            // n-times --> O(nm)
             for (int i = h + 1; i < bit_mat.size(); i++) {
                 if(bit_mat[i][k]){
                     bit_mat[i] = bit_mat[i] ^ bit_mat[h];
                 }
             }
-            // O(1)
             h++;
             k++;
         }
     }
 
+    // Zeilen aus Nullen werden aus Performancegründen nicht entfernt, es
+    // wird davon ausgegangen, dass die Zeilen linear unabhängig sind.
+    // Dazu wird vor dem Ausführen der Algorithmen einmal der andere
+    // Gauß-Algorithmus angewendet
 
-    // O(n*m)
-    // remove all zero-lines
-    /*bit_mat.erase(std::remove_if(bit_mat.begin(), bit_mat.end(), [](auto el){
-        return el.count() == 0;
-    }), bit_mat.end());*/
-
-
-    // bring into reduced echelon form
-    // n times --> O(nm)*n
+    // Resubstitution
     for(int row = bit_mat.size() - 1; row >= 0; row--){
-        // this should work, as every line has a one (because all the others were removed before)
         auto leading_one = bit_mat[row].find_first();
         // diese Reihe von allen darüberliegenden Reihen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
         for(int i = 0; i < row; i++){ // n times --> O(nm)
@@ -72,12 +63,12 @@ void Utils::efficientGauss(std::vector<boost::dynamic_bitset<>>& bit_mat){
         }
     }
 }
-//total: O(nm * max(n, m))
+//insgesamt: O(nm * max(n, m))
 void Utils::gauss(std::vector<std::vector<int>>& matrix) {
     int h = 0;
     int k = 0;
 
-    // m times --> O(nm^2)
+    // m-Mal --> O(nm^2)
     while (h < matrix.size() && k < matrix[0].size()) {
         int i_max = h;
 
@@ -105,16 +96,15 @@ void Utils::gauss(std::vector<std::vector<int>>& matrix) {
     }
 
     // O(n*m)
-    // remove all zero-lines
+    // Null-Zeilen entfernen
     matrix.erase(std::remove_if(matrix.begin(), matrix.end(), [](auto el){
         return std::count(el.begin(), el.end(), 1) == 0;
     }), matrix.end());
 
 
-    // bring into reduced echelon form
-    // n times --> O(nm)*n
+    // In reduzierte Spaltenform bringen
+    // n-Mal --> O(nm)*n
     for(int row = matrix.size() - 1; row >= 0; row--){
-        // this should work, as every line has a one (because all the others were removed before)
         // O(m)
         auto leading_one = std::distance(matrix[row].begin(), std::find(matrix[row].begin(), matrix[row].end(), 1));
         // diese Reihe von allen darüberliegenden Reihen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
@@ -157,13 +147,4 @@ std::vector<std::vector<int>> Utils::transpose(std::vector<std::vector<int>> mat
         mat_transpose.push_back(equation);
     }
     return mat_transpose;
-}
-
-void Utils::print_matrix(const vector<vector<int>> &matrix) {
-    for (const auto &row: matrix) {
-        for (const auto el: row) {
-            cout << el << " ";
-        }
-        cout << "\n";
-    }
 }

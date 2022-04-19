@@ -2,9 +2,9 @@ import os.path
 import random
 
 if __name__ == "__main__":
-    n = int(input("Wieviele Karten sind sollen es insgesamt sein? "))
-    k = int(input("Wieviele sind davon Öffungskarten?"))
-    m = int(input("Wieviele Bits hat jede Karte?"))
+    n = int(input("Wie viele Karten sollen es insgesamt sein? "))
+    k = int(input("Wie viele sind davon Öffnungskarten? "))
+    m = int(input("Wie viele Bits hat jede Karte? "))
 
     karten = []
     for i in range(n - 1):

@@ -6,8 +6,6 @@
 #include <iostream>
 #include "ISDSolver.h"
 
-#include <omp.h>
-
 using namespace std;
 
 std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
@@ -15,12 +13,11 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
     Utils::gauss(instance.H);
 
     auto n_cols = instance.H[0].size();
-    auto n_rows = instance.H.size(); // the number of rows might get reduced
+    auto n_rows = instance.H.size();
 
     int t = instance.k + 1;
 
     vector<int> return_value(0);
-    omp_set_num_threads(8);
 #pragma omp parallel default(none) firstprivate(rng) shared(return_value, n_cols, n_rows, instance, t, attempts)
     {
         vector<boost::dynamic_bitset<>> H_perm;

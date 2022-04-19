@@ -26,6 +26,7 @@ class BruteforceSolver {
     vector<bitset<size>> row_bitsets;
     vector<bitset<size>> cols_bitsets;
 
+    chrono::time_point<chrono::steady_clock> fortschritt_zeit = chrono::steady_clock::now();
 
     vector<vector<int>> ones_in_row;
     vector<vector<int>> ones_of_col;
@@ -41,7 +42,8 @@ class BruteforceSolver {
     void resub(int col, bitset<size> &codeword, int c, bitset<size> syndrome) {
 
         // Fortschritt ausgeben
-        if (col > 160) {
+        if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - fortschritt_zeit).count() >= 1) {
+            fortschritt_zeit = chrono::steady_clock::now();
             double total = pow(2, n_cols);
             double done;
             for (int i = n_cols; i >= 0; i--) {
@@ -49,9 +51,8 @@ class BruteforceSolver {
                     done += pow(2, i - 1);
                 }
             }
-            cout << done / total << "\n";
+            cout << "Fortschritt: " << (done * 100.0) / total << "% \n";
         }
-
 
         // Variablen setzten, die bereits festgelegt werden können
         // row_of_var[col] >= 0: Diese Variable hat ein Pivotelement im Gauss-Verfahren gehabt und kann folglich
@@ -127,7 +128,6 @@ public:
     }
 
     explicit BruteforceSolver(Utils::Instance instance) {
-
         matrix = std::move(instance.H);
         K = instance.k;
         n_cols = matrix[0].size();
@@ -183,15 +183,13 @@ public:
             cols_bitsets.push_back(word);
         }
 
-        // Zeilen in Bitsets umwandelen, um effizienter damit rechnen zu können
+        // Zeilen in Bitsets umwandeln, um effizienter damit rechnen zu können
         for (const auto &row: matrix) {
             bitset<size> bitset;
             for (int i = 0; i < row.size(); i++)
                 bitset[i] = row[i];
             row_bitsets.push_back(bitset);
         }
-
-        // TODO: Compute how many variables are free and estimate running time
     }
 };
 
