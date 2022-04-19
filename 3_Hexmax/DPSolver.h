@@ -8,37 +8,37 @@
 #include <string>
 #include <bitset>
 #include <unordered_map>
-
 #include <unordered_set>
 
 #include "State.h"
 
 class DPSolver {
 private:
-    int getDP(int pos, int surplus);
+    int max_umlegungen;
 
     std::vector<int> memo;
     std::vector<int> parent;
 
-    static std::pair<int, int> difference(std::bitset<7> c1, std::bitset<7> c2);
-
     std::string word;
     std::vector<std::bitset<7>> word_digits;
 
-    int max_moves;
-
-    std::string reconstruct(int max);
-
-public:
-    std::string solve(const std::string &string, int i);
-
-    static std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>> getMoves(std::string old, std::string next);
-
-    void calcBottomUp();
+    static std::pair<int, int> unterschied(std::bitset<7> c1, std::bitset<7> c2);
 
     [[nodiscard]] int memoKey(int pos, int d) const;
 
-    static std::string visualizeMoves(const std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>>& moves, const std::string& startingState);
+    std::string rekonstruiere();
+
+    int getDP(int pos, int surplus);
+
+    void dpVorberechnen();
+
+
+public:
+    std::string solve(const std::string &ursprung, int i);
+
+    static std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>>
+    getMoves(const std::string &alt, const std::string &ziel);
+
 };
 
 
