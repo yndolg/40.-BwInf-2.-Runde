@@ -16,25 +16,20 @@
 using namespace std;
 
 
-//insgesamt: O(nm * max(n, m))
 void Utils::gauss(std::vector<std::vector<int>>& matrix) {
     int h = 0;
     int k = 0;
 
-    // m-Mal --> O(nm^2)
     while (h < matrix.size() && k < matrix[0].size()) {
         int i_max = h;
 
-        // O(n)
         while (i_max < matrix.size() && matrix[i_max][k] == 0) {
             i_max += 1;
         }
-        if (i_max == matrix.size()) { // O(1)
+        if (i_max == matrix.size()) {
             k++;
-        } else { // O(nm)
-            // O(m)
+        } else {
             swap(matrix[h], matrix[i_max]);
-            // n-times --> O(nm)
             for (int i = h + 1; i < matrix.size(); i++) {
                 if(matrix[i][k]){
                     for (int j = k; j < matrix[0].size(); j++) {
@@ -42,25 +37,22 @@ void Utils::gauss(std::vector<std::vector<int>>& matrix) {
                     }
                 }
             }
-            // O(1)
             h++;
             k++;
         }
     }
 
-    // O(n*m)
-    // Null-Zeilen entfernen
+    // 0-Zeilen entfernen
     matrix.erase(std::remove_if(matrix.begin(), matrix.end(), [](auto el){
         return std::count(el.begin(), el.end(), 1) == 0;
     }), matrix.end());
 
 
     // In reduzierte Spaltenform bringen
-    // n-Mal --> O(nm)*n
     for(int row = matrix.size() - 1; row >= 0; row--){
-        // O(m)
         auto leading_one = std::distance(matrix[row].begin(), std::find(matrix[row].begin(), matrix[row].end(), 1));
-        // diese Reihe von allen darüberliegenden Reihen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
+
+        // diese Zeile von allen darüberliegenden Zeilen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
         for(int i = 0; i < row; i++){ // n times --> O(nm)
             if(matrix[i][leading_one]){
                 std::transform(matrix[i].begin(), matrix[i].end(), matrix[row].begin(), matrix[i].begin(), std::bit_xor<>());

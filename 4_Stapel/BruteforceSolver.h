@@ -37,31 +37,18 @@ class BruteforceSolver {
     int K;
 
     /*
-     * Alle Variablen < col werden rekursive resubstituiert
+     * Alle Variablen < col werden rekursiv resubstituiert
      */
-    void resub(int col, bitset<size> &codeword, int c, bitset<size> syndrome) {
+    void resub(int col, bitset<size> codeword, int c, bitset<size> syndrome) {
 
-        // Fortschritt ausgeben
-        if (chrono::duration_cast<chrono::seconds>(chrono::steady_clock::now() - fortschritt_zeit).count() >= 1) {
-            fortschritt_zeit = chrono::steady_clock::now();
-            double total = pow(2, n_cols);
-            double done;
-            for (int i = n_cols; i >= 0; i--) {
-                if (codeword[i]) {
-                    done += pow(2, i - 1);
-                }
-            }
-            cout << "Fortschritt: " << (done * 100.0) / total << "% \n";
-        }
-
-        // Variablen setzten, die bereits festgelegt werden können
-        // row_of_var[col] >= 0: Diese Variable hat ein Pivotelement im Gauss-Verfahren gehabt und kann folglich
-        //                       festgesetzt werden
+        // Variablen setzten, die resubstituiert werden können
+        // row_of_var[col] >= 0: Diese Variable hat ein Pivotelement im Gauss-Verfahren
+        //                       gehabt und kann resubstituiert werden
         while (col >= 0 && row_of_var[col] >= 0 && c >= 0 && c <= col + 1) {
 
-            // Der Wert dieser Spalte wird aus den bereits substituierten Spalten berechnet: die Summe der Einsen in
-            // den bisher verwendeten Spalten in der Zeile, in der das Pivotelement war. Da das Pivotelement immer die
-            // erste Eins einer Zeile ist, sind alle Variablen, die diese Spalte beeinflussen können bereits substituiert
+            // Der Wert dieser Spalte wird aus den bereits substituierten Spalten berechnet, die Summe
+            // der bisher substituierten Variablen, skalar multipliziert mit der Zeile, in der das
+            // Pivotelement dieser Variable ist.
             bool v = (row_bitsets[row_of_var[col]] & codeword).count() % 2;
 
             // Wenn die Variable auf 1 gesetzt wurde, muss die Spalte zum aktuellen Syndrom hinzugefügt werden
@@ -73,43 +60,63 @@ class BruteforceSolver {
             col--;
         }
 
-
         // Abbrechen, wenn es nicht mehr genug Spalten gibt, um das Zielgewicht zu erreichen
         if (c > col + 1) {
+            printProgress(codeword);
             return;
         }
 
         // Abbrechen, wenn das Zielgewicht bereits überschritten wurde
         if (c < 0) {
+            printProgress(codeword);
             return;
         }
 
-
         // Die Substitution hat die letzte Variable erreicht
         if (col < 0) {
-            // TODO: abort the algorithm
             results.push_back(codeword);
             return;
         }
 
-        // Die Variable 'col' ist frei. Rekursiv versuchen 0 oder 1 zu substituieren
+        // Abbrechen, wenn bereits eine Lösung gefunden wurde
+        if (!results.empty()) {
+            return;
+        }
+
+        // Die Variable 'col' ist frei -> rekursiv versuchen, 0 oder 1 zu substituieren
         if (row_of_var[col] < 0) {
-            auto mysolution = codeword;
-            mysolution[col] = 0;
-            resub(col - 1, mysolution, c, syndrome);
+            codeword[col] = 0;
+            resub(col - 1, codeword, c, syndrome);
 
-            // Abbrechen, wenn bereits eine Lösung gefunden wurde
-            if (!results.empty()) {
-                return;
-            }
-
-            auto mysolution2 = codeword;
-            mysolution2[col] = 1;
-            resub(col - 1, mysolution2, c - 1, syndrome ^ cols_bitsets[col]);
+            codeword[col] = 1;
+            resub(col - 1, codeword, c - 1, syndrome ^ cols_bitsets[col]);
             return;
         }
 
         cout << "Ein Fehler ist aufgetreten.\n";
+    }
+
+    void printProgress(bitset<size> codeword) {
+        // maximal einmal pro Sekunde ausgeben
+        if (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - fortschritt_zeit).count() >=
+            1000) {
+            fortschritt_zeit = chrono::steady_clock::now();
+
+            // Der Fortschritt wird aus dem aktuellen Codewort berechnet.
+            // Das ist möglich, da die Rekursion immer zuerst 0 und dann 1
+            // ausprobiert.
+            double progress = 0;
+            int count = 0;
+            for (int i = n_cols - 1; i >= 0; i--) {
+                if (row_of_var[i] < 0) {
+                    count += 1;
+                    if (codeword[i] == 1) {
+                        progress += pow < double > (2.0, -count);
+                    }
+                }
+            }
+            cout << "Fortschritt: " << (progress * 100.0) << "% \n";
+        }
     }
 
 public:
@@ -133,7 +140,9 @@ public:
         n_cols = matrix[0].size();
     }
 
-    void prepare() {
+    void vorberechnen() {
+
+        // die Matrix in reduzierte Zeilenstufenform bringen
         Utils::gauss(matrix);
 
         // vorberechnen, welche Zeile das Pivotelement einer Spalte hat
@@ -148,7 +157,7 @@ public:
             }
         }
 
-        // alle Positionen mit Einsen einer Zeile vorberechnen, ohne das Pivotelement
+        // Positionen der Einsen einer Zeile vorberechnen, ohne das Pivotelement
         for (auto &row: matrix) {
             vector<int> ones;
             bool first = true;
@@ -183,7 +192,7 @@ public:
             cols_bitsets.push_back(word);
         }
 
-        // Zeilen in Bitsets umwandeln, um effizienter damit rechnen zu können
+        // Zeilen in Bitsets umwandeln, um effizienter rechnen zu können
         for (const auto &row: matrix) {
             bitset<size> bitset;
             for (int i = 0; i < row.size(); i++)

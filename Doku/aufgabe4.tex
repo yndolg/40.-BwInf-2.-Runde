@@ -147,16 +147,22 @@ Da die Gleichungssysteme aber unterbestimmt sind, gibt es freie Variablen.
 In diesem Fall wird rekursiv versucht, zuerst die 0 und dann die 1 an dieser Stelle zu substituieren. 
 Hat das so gefundene Wort die richtige Anzahl an Einsen, wird es als Lösung ausgegeben, andernfalls werden per Backtracking andere Werte für die freien Variablen eingesetzt. 
 Das Verfahren kann unter anderem dadurch etwas beschleunigt werden, dass abgebrochen wird, wenn bereits die maximale Anzahl an Einsen verwendet wurde oder es nicht mehr genug Variablen gibt, um die nötige Anzahl an Einsen zu erreichen. 
-Als Backtracking-Verfahren hat dieser Algoirthmus eine exponentielle Laufzeit und in der Praxis meist deutlich langsamer als das Information-Set-Decoding. 
-Das Verfahren hat aber den Vorteil, dass es vollständig derterministisch ist.
-Daraus folgt, dass der Brute-Force-Ansatz auch mit Sicherheit bestätigen kann, dass es keine Lösung gibt, wenn das der Fall ist. 
 
-% TODO laufzeitanalyse
-\subsection{Erweiterung: Generierung von Beispielen}
+Es folgt eine grobe Abschätzung der Laufzeit dieses Verfahrens.
+Die Anzahl der freien Variable, für die also per Backtracking potentiell beide Möglichkeiten ausprobiert werden müssen, ist $n-m$. Pro rekursivem Aufruf wird im Worst-Case $O(nm)$ Zeit für die Substitution verwendet. Zusammen mit dem Gauß-Jordan-Algorithmus, der zuvor ausgeführt wird, ergibt sich eine Laufzeit von 
+\begin{align*}
+    T(n,m) = \Theta(n^2m) + O(2^{n-m})
+\end{align*}.
+Das ist bei Instanzen, bei denen $n$ und $m$ relativ nah beineinander liegen bereits deutlich besser als ein reines Brute-Force, bei dem alle Kombinationen von Karten ausprobiert werden würden, was eine Laufzeit von $O(2^n)$ benötigen würde.
+Die Laufzeit ist dennoch in der Praxis meist deutlich langsamer als die des Information-Set-Decoding.  
+Das Verfahren hat aber den Vorteil, dass es vollständig derterministisch ist und es auch mit Sicherheit bestätigen kann, dass es keine Lösung gibt, wenn das der Fall ist. 
+
+\subsection{Erweiterung: Generierung von größeren Beispielen}
 Beide Ansätze können die Beispiele vom BWINF in angemessener Zeit lösen.
 Der Information-Set-Decoding-Algorithmus ist aber in der Lage, auch deutlich größere Beispiele zu Lösen. Daher wurde die Aufgabe so erweitert, dass auch beispiele von 2-4-facher Größe gelöst werden sollen. Mit einem reinen Brute-Force-Ansatz sind derart große Beispiele dann nich mehr lösbar. Zusätzlich müssen größere Beispieldatein generiert werden.
 Hierfür wäre es denkbar, ähnlich wie im McElice-Kryptosystem einen linearen Code mit bestimmten minmalen Distanz zu generieren. So könnte man sich sicher sein, dass es nur die eine Menge an Karten gibt, die im exklusiven Oder null ergeben. Allerdings können auch einfach Zufällig generierte Karten verwendet werden, da es bei zufällig ausgewählten Vektoren äußerst unwahrscheinlich ist, dass es eine zweite Lösung gibt. Danach werden $k$ Karten ausgewählt und eine weitere Karte durch das exklusive Oder der $k$ Karten ausgetauscht.
-
+\subsection{Teilaufgabe b)}
+Nachdem Zara die $k+1$ richtigen Karten gefunden hat, möchte sie Haus $h$ aufschließen. 
 \section{Umsetzung}
 Die Lösung wurde in \texttt{C++} implementiert. Die beiden Ansätze wurden in jeweils einer Klasse, \lstinline{ISDSolver} und \lstinline{BruteforceSolver} implementiert. Eine \lstinline{Utils}-Klasse enthält Methoden, die von beiden Algorithmen verwendet werden, beispielsweise eine Implementation des Gauß-Jordan-Algorithmus über $\mathbb{F}_2$.
 
@@ -167,7 +173,7 @@ Bei jedem Versuch wird eine zufällige Permutation für die Spalten über die \l
 Danach wird der Gauß-Jordan-Algorithmus ausgeführt, die Pivots gesucht und deren Zeilen und Spalten gespeichert. 
 Hier wird der Gauß-Jordan-Algorithmus sehr häufig, nähmlich in jedem Versuch, ausgeführt und ist der Flaschenhals für die Laufzeit. 
 Daher wird eine effizientere Version des Algorithmus verwendet, die statt Vektoren aus der Standardbibliothek \lstinline{dynamic_bitset}s aus der Boost-Bibliothek verwendet.
-Außerdem wird das entfernen von null-Zeilen ausgelassen, da bereits zu Beginn die linear abhängigen Zeilen entfernt wurden.
+Außerdem wird das Entfernen von null-Zeilen ausgelassen, da bereits zu Beginn die linear abhängigen Zeilen entfernt wurden und statt \lstinline{std::swap} wird der XOR-Swap-Algorithmus verwendet, da die Speicherverwaltung für die temporäre Variable in \lstinline{std::swap} viel Zeit benötigt.
 
 Da $p=1$ verwendet wird, kann nun einfach über alle Spalten iteriert werden, in denen keine Pivots gefunden wurde und deren Hamming-Gewicht berechnet werden. 
 Hat die Spalte das richtige Gewicht, können über die gespeicherten Pivot-Positionen die notwendigen Bits gefunden werden, ohne wirklich das Syndrom mit dem Inversen der Submatrix $\mathbf{H}_I$ zu multiplizieren.
@@ -176,7 +182,7 @@ Aufgrund seiner Struktur ist dieser Algorithmus sehr einfach zu parallelisieren:
 Um dieses Potential auch auszuschöpfen wurde OpenMP verwendet, um die Hauptschleife mehrfach gleichzeitig auszuführen.
 
 Der Brute-Force-Algorithmus ist deutlich ineffizienter und musste stark optimiert werden, um alle Beispiele von der BwInf-Website in anehmbarer Zeit lösen zu können. 
-Dafür werden in der \lstinline{prepare()} Funktion einige Dinge vorberechnet, sodass beim eigentlichen berechnen weniger in der Matrix gesucht werden muss. 
+Dafür werden in der \lstinline{vorberechnen()} Funktion einige Dinge vorberechnet, sodass beim eigentlichen berechnen weniger in der Matrix gesucht werden muss. 
 Konkret wird vorberechnet, welche Spalten Pivotelemente haben, da die Werte für diese Spalten durch Resubstitution ermittelt werden können, statt 0 und 1 auszuprobieren. 
 Für die Berechnung ist außerdem wichtig, in welcher Spalte das jeweilige Pivotelement ist. 
 Daraufhin werden alle Indizes von Einsen in den Zeilen und Spalten vorberechnet, um effizient über diese Positionen iterieren zu können. 
@@ -188,10 +194,17 @@ Das eigentliche Lösen wurde dann Rekursiv in der Methode \lstinline{resub} impl
 Die Methode bekommt eine Spalte, ab der substituiert werden soll, das bisherige Codewort, die Anzahl der Einsen, die noch gesetzt werden können und das Syndrom, also die Summe der Spalten, die im aktuellen Codewort eine Eins haben. 
 Die letzteren beiden Argumente könnten auch bei jedem Methodenaufruf neu berechent werden, werden aber aus Performancegründen übergeben. 
 Daraufhin wird solange resubstituiert, bis eine Spalte erreicht wird, die kein Pivot-Element enthält, wo also sowohl 0 als auch 1 möglich wären.
-
 Die Suche kann optimiert werden, indem abgebrochen wird, wenn es nicht mehr genug Spalten gibt, um das Zielgewicht zu erreichen oder das Zielgewicht bereits überschritten wurde. 
-
 Schlussendlich wird nacheinander 0 und 1 für die freie Variable eingesetzt und die Methode rekursiv für die nächste Variable aufgerufen. 
+
+Da der Brute-Force-Ansatz mitunter sehr lange brauchen kann, ist es wichtig, dass der Benutzer Feedback über den Fortschritt bekommt. 
+Es gestaltet sich aber als durchaus schwierig, den aktuellen Fortschritt zu berechen. 
+Daher werden die effekte der beiden Abbruchbedingungen vernachlässigt. 
+Dann kann aus dem aktuellen Codewort der Fortschritt ermittelt werden.
+In der Praxis ist dieser Fortschritt am Anfang des Algorithmus zu pessimistisch, reicht aber aus, um den Nutzer eine grobe Idee zu geben, wie lange der Algorithmus noch brauchen wird. 
+Da der Algorithmus bricht ab, wenn er eine Lösung gefunden hat, der Fortschritt bezieht sich jedoch auf die Zeit, die benötigt wird, um alle Möglichkeiten auszuprobieren. 
+Das heißt, dass der Algorithmus meist schneller terminiert, als man es nach dem Fortschritt erwarten würde -- dies zu verhindern würde aber keinen Sinn ergeben, da der Algorithmus natürlich noch nicht weiß, wann er eine Lösung finden wird. 
+Der Code zum Ausgeben des Fortschrittes ist in \lstinline{printProgress()} zu finden.
 
 Zum Compilieren des Codes wird ein \texttt{C++-14}-fähiger Compiler benötigt, der zusätzlich OpenMP unterstützt.
 Als Build-System wird CMake verwendet. 

@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     ifstream ifs(argv[2]);
     if(!ifs.good()){
         cout << "Die Problemdefinition konnte nicht eingelesen werden.\r\n" << verwendung;
-        ifs = ifstream("/media/data/schule/BWINF/40_2/4_Stapel/Eingabe/stapel4.txt");
+        return 1;
     }
 
     Utils::Instance orig_instance = Utils::readInstanceFromFile(ifs);
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     if (string("isd") == argv[1]) {
         ISDSolver s;
         solutions = s.solve(instance);
-        attempts = s.attempts;
+        attempts = s.versuche;
 
         cout << "Lösungsverfahren: Information-Set-Decoding\n";
     } else if (string("bruteforce") == argv[1]) {
@@ -54,15 +54,15 @@ int main(int argc, char **argv) {
         // festgelegt sein muss.
         if(instance.H[0].size() < 256){
             BruteforceSolver<256> s(instance);
-            s.prepare();
+            s.vorberechnen();
             solutions = s.solve();
         } else if(instance.H[0].size() < 1024){
             BruteforceSolver<1024> s(instance);
-            s.prepare();
+            s.vorberechnen();
             solutions = s.solve();
         } else if(instance.H[0].size() < 8192){
             BruteforceSolver<8192> s(instance);
-            s.prepare();
+            s.vorberechnen();
             solutions = s.solve();
         } else{
             cout << "Der Brute-Force-Ansatz kann nur Probleme mit < 8192 Variablen lösen.\n";

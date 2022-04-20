@@ -13,13 +13,13 @@ class ISDSolver {
 public:
     ISDSolver();
 
-    int attempts = 0;
+    int versuche = 0;
 
     std::vector<std::vector<int>> solve(Utils::Instance i);
 
 private:
 
-    std::vector<int> getRandomPermutation(int n);
+    std::vector<int> zufaelligePermutation(int n);
 
     static void efficientGauss(std::vector<boost::dynamic_bitset<>> &bit_mat);
 

@@ -3,3 +3,7 @@
 //
 
 #include "BruteforceSolver.h"
+
+/*
+ * Da der BruteforceSolver ein Template ist, ist die Implementation in der Header-Datei.
+ */

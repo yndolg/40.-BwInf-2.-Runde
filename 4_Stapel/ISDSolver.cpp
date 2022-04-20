@@ -14,10 +14,10 @@ using namespace std;
  * Im ISD-Algorithmus wird die Laufzeit vom Gauss-Algorithmus dominiert,
  * sodass die Optimierungen lohnenswert sind.
  */
-void ISDSolver::efficientGauss(std::vector<boost::dynamic_bitset<>>& bit_mat){ // Theta(n^2m)
+void ISDSolver::efficientGauss(std::vector<boost::dynamic_bitset<>> &bit_mat) { // Theta(n^2m)
     int h = 0;
     int k = 0;
-    while (h < bit_mat.size() && k < bit_mat[0].size()) {       // O(n*m*n), Omega(min(n,m)*m*n)
+    while (h < bit_mat.size() && k < bit_mat[0].size()) {
         int i_max = h;
         while (i_max < bit_mat.size() && bit_mat[i_max][k] == 0) {
             i_max += 1;
@@ -25,15 +25,16 @@ void ISDSolver::efficientGauss(std::vector<boost::dynamic_bitset<>>& bit_mat){ /
         if (i_max == bit_mat.size()) {
             k++;
         } else {
-            // XOR-Swap-Algorithmus, std::swap hat einen großen Overhead durch die temporäre Variable
-            if(h != i_max){                                      // O(n)
+            // XOR-Swap-Algorithmus, std::swap wäre durch die Speicherverwaltung der
+            // temporären Variable ein Flaschenhals
+            if (h != i_max) {
                 bit_mat[h] ^= bit_mat[i_max];
                 bit_mat[i_max] ^= bit_mat[h];
                 bit_mat[h] ^= bit_mat[i_max];
             }
-            for (int i = h + 1; i < bit_mat.size(); i++) {       // O(nm)
-                if(bit_mat[i][k]){
-                    bit_mat[i] = bit_mat[i] ^ bit_mat[h];        // O(n)
+            for (int i = h + 1; i < bit_mat.size(); i++) {
+                if (bit_mat[i][k]) {
+                    bit_mat[i] ^= bit_mat[h];
                 }
             }
             h++;
@@ -42,18 +43,23 @@ void ISDSolver::efficientGauss(std::vector<boost::dynamic_bitset<>>& bit_mat){ /
     }
 
     // Resubstitution
-    for(int row = bit_mat.size() - 1; row >= 0; row--){       // Theta(n^2m)
-        auto leading_one = bit_mat[row].find_first();         // O(n)
-        // diese Reihe von allen darüberliegenden Reihen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
-        for(int i = 0; i < row; i++){                         // Theta(nm)
-            if(bit_mat[i][leading_one]){
-                bit_mat[i] ^= bit_mat[row];                   // Theta(n)
+    for (int row = bit_mat.size() - 1; row >= 0; row--) {
+        auto leading_one = bit_mat[row].find_first();
+        // diese Zeile von allen darüberliegenden Zeilen entfernen, wenn diese
+        // eine 1 an der entsprechenden Stelle haben
+        for (int i = 0; i < row; i++) {
+            if (bit_mat[i][leading_one]) {
+                bit_mat[i] ^= bit_mat[row];
             }
         }
     }
 }
+
 std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
 
+    // Einmal Gauss-Jordan-Algorithmus anpassen. Dadurch werden linear abhängige
+    // Zeilen aus der Matrix entfernt, sodass sich die Anzahl der Zeilen nochmal
+    // ändert.
     Utils::gauss(instance.H);
 
     auto n_cols = instance.H[0].size();
@@ -61,8 +67,11 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
 
     int t = instance.k + 1;
 
+    // In allen Threads geteilt, sodass die anderen Threads abbrechen können,
+    // wenn ein Thread eine Lösung gefunden hat.
     vector<int> return_value(0);
-    #pragma omp parallel default(none) firstprivate(rng) shared(return_value, n_cols, n_rows, instance, t, attempts)
+
+#pragma omp parallel default(none) firstprivate(rng) shared(return_value, n_cols, n_rows, instance, t, attempts)
     {
         vector<boost::dynamic_bitset<>> H_perm;
         for (int row = 0; row < n_rows; row++) {
@@ -73,12 +82,13 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
         m_i.reserve(n_rows);
         vector<int> k_i;
         k_i.reserve(n_rows);
+
         while (return_value.empty()) {
             #pragma omp critical
-            attempts += 1;
+            versuche += 1;
 
             // die Spalten von H permutieren und in H_perm abspeichern
-            auto permutation = getRandomPermutation(n_cols);
+            auto permutation = zufaelligePermutation(n_cols);
             for (int row = 0; row < n_rows; row++) {
                 for (int col = 0; col < n_cols; col++) {
                     H_perm[row][col] = instance.H[row][permutation[col]];
@@ -88,7 +98,7 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
             // H_perm in reduzierte Spaltenform bringen
             efficientGauss(H_perm);
 
-            // find pivots
+            // Pivots finden, um leicht das Inverse der Teilmatrix zu bilden
             m_i.clear();
             k_i.clear();
             pivots.clear();
@@ -99,52 +109,44 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
                 k_i.push_back(row);
             }
 
-           /* vector<int> not_m_i;
-            for (int i = 0; i < n_cols; i++) {
-                if (std::find(m_i.begin(), m_i.end(), i) == m_i.end())
-                    not_m_i.push_back(i);
-            }*/
-
-
-            // calculate all p-bit subsets of not_m_i, or less, if not_m_i.size() < 2
+            // p wird auf 1 festgelegt. Folglich kann einfach über die Spalten iteriert werden.
+            // Dadurch wird über alle p-großen Teilmengen iteriert
             int p = 1;
-            for (int p2 = 0; p2 < n_cols; p2 ++) {
-                if(pivots.test(p2))
+            for (int s = 0; s < n_cols; s++) {
+                // Nur über die Spalten iterieren, die nicht in der invertierbaren Submatrix sind
+                if (pivots.test(s))
                     continue;
-                vector<int> syndrome(n_rows, 0);
+
+                vector<int> syndrom(n_rows, 0);
 
                 for (int j = 0; j < n_rows; j++)
-                    syndrome[j] = H_perm[j][p2];
+                    syndrom[j] = H_perm[j][s];
 
-                // if column p has weight of exactly t - 1 => match
+                // Hamming-Gewicht bestimmen
                 int w = 0;
-                for (int bit: syndrome) {
+                for (int bit: syndrom) 
                     w += bit;
-                }
-
+                
                 if (w == t - p) {
                     vector<int> solution(n_cols, 0);
 
-                    // solution has bits in p set and the columns of the pivots in the rows of the syndrome (p)
-                    solution[p2] = 1;
+                    // Die ausgewählte Spalte wird verwendet
+                    solution[s] = 1;
 
+                    // Berechnen, welche Spalten aus der invertierbaren Submatrix
+                    // ebenfalls verwendet werden müssen
                     for (int i = 0; i < n_rows; i++) {
-                        if (syndrome[k_i[i]] == 1) {
+                        if (syndrom[k_i[i]] == 1) {
                             solution[m_i[i]] = 1;
                         }
                     }
 
-                    // unpermute the solution
+                    // Permutation rückgängig machen
                     vector<int> solution_perm(n_cols);
                     for (int i = 0; i < n_cols; i++) {
                         solution_perm[permutation[i]] = solution[i];
                     }
 
-                    /* cout << "Found a solution:";
-                     for (const auto x: Utils::get_true_positions(solution_perm)) {
-                         cout << " " << x;
-                     }
-                     cout << "\n";*/
                     return_value = Utils::get_true_positions(solution_perm);
                 }
             }
@@ -156,10 +158,10 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
 
 ISDSolver::ISDSolver() {
     std::random_device device;
-    rng = mt19937(10);
+    rng = mt19937(device());
 }
 
-vector<int> ISDSolver::getRandomPermutation(int n) {
+vector<int> ISDSolver::zufaelligePermutation(int n) {
     vector<int> permutation(n);
     for (int i = 0; i < n; i++) {
         permutation[i] = i;
