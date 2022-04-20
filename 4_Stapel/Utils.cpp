@@ -15,54 +15,7 @@
 
 using namespace std;
 
-/*
- * Effizientere Variante des Gauss-Verfahrens, die Bitsets verwendet.
- * Im ISD-Algorithmus wird die Laufzeit vom Gauss-Algorithmus dominiert,
- * sodass die Optimierungen lohnenswert sind.
- */
-void Utils::efficientGauss(std::vector<boost::dynamic_bitset<>>& bit_mat){
-    int h = 0;
-    int k = 0;
-    while (h < bit_mat.size() && k < bit_mat[0].size()) {
-        int i_max = h;
-        while (i_max < bit_mat.size() && bit_mat[i_max][k] == 0) {
-            i_max += 1;
-        }
-        if (i_max == bit_mat.size()) {
-            k++;
-        } else {
-            // XOR-Swap-Algorithmus, std::swap hat einen großen Overhead durch die temporäre Variable
-            if(h != i_max){
-                bit_mat[h] ^= bit_mat[i_max];
-                bit_mat[i_max] ^= bit_mat[h];
-                bit_mat[h] ^= bit_mat[i_max];
-            }
-            for (int i = h + 1; i < bit_mat.size(); i++) {
-                if(bit_mat[i][k]){
-                    bit_mat[i] = bit_mat[i] ^ bit_mat[h];
-                }
-            }
-            h++;
-            k++;
-        }
-    }
 
-    // Zeilen aus Nullen werden aus Performancegründen nicht entfernt, es
-    // wird davon ausgegangen, dass die Zeilen linear unabhängig sind.
-    // Dazu wird vor dem Ausführen der Algorithmen einmal der andere
-    // Gauß-Algorithmus angewendet
-
-    // Resubstitution
-    for(int row = bit_mat.size() - 1; row >= 0; row--){
-        auto leading_one = bit_mat[row].find_first();
-        // diese Reihe von allen darüberliegenden Reihen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
-        for(int i = 0; i < row; i++){ // n times --> O(nm)
-            if(bit_mat[i][leading_one]){
-                bit_mat[i] ^= bit_mat[row];
-            }
-        }
-    }
-}
 //insgesamt: O(nm * max(n, m))
 void Utils::gauss(std::vector<std::vector<int>>& matrix) {
     int h = 0;

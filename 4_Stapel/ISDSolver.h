@@ -12,12 +12,17 @@
 class ISDSolver {
 public:
     ISDSolver();
+
     int attempts = 0;
+
     std::vector<std::vector<int>> solve(Utils::Instance i);
 
 private:
 
     std::vector<int> getRandomPermutation(int n);
+
+    static void efficientGauss(std::vector<boost::dynamic_bitset<>> &bit_mat);
+
     std::mt19937 rng;
 };
 

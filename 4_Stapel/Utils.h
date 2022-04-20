@@ -32,9 +32,6 @@ public:
 
     static std::vector<std::vector<int>> transpose(std::vector<std::vector<int>>);
 
-    static void print_matrix(const std::vector<std::vector<int>> &matrix);
-
-    static void efficientGauss(std::vector<boost::dynamic_bitset<>> &bit_mat);
 };
 
 
