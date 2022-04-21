@@ -83,7 +83,15 @@ int main(int argc, char **argv) {
         for (const auto &solution: solutions) {
             for (const auto &v: solution) {
                 cout << " Karte " << std::setw(3) << v << " (";
+                int count = 0;
                 for(int bit: orig_instance.H[v]){
+                    ++count;
+                    // Nur maximal 64-Bit der Karten ausgeben, da nicht mehr in ein Terminalfenster passt. Mit den
+                    // Kartennummern können die restlichen Bits aus der Eingabedatei entnommen werden.
+                    if(count > 64){
+                        cout << "...";
+                        break;
+                    }
                     cout << bit;
                 }
                 cout << ")\n";

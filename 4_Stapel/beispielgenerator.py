@@ -17,13 +17,17 @@ if __name__ == "__main__":
         sicherheitskarte = [(a + b) % 2 for a, b in zip(karten[karte], sicherheitskarte)]
 
     karten[oeffnungskarten[-1]] = sicherheitskarte
+    path = input("In welchen Ordner soll das Beispiel gespeichert werden? [leerlassen für '../Eingabe']")
+    if len(path) == 0:
+        path = "Eingabe"
 
+    # Automatisch die Dateinamen finden
     file = 0
-    while os.path.exists(f"../Eingabe/stapelc{file}.txt"):
+    while os.path.exists(f"{path}/stapelc{file}.txt"):
         file += 1
 
-    bsp_path = os.path.abspath(f"../Eingabe/stapelc{file}.txt")
-    loe_path = os.path.abspath(f"../Eingabe/stapelc{file}_loesung.txt")
+    bsp_path = os.path.abspath(f"{path}/stapelc{file}.txt")
+    loe_path = os.path.abspath(f"{path}/stapelc{file}_loesung.txt")
 
     print(f"Schreibe Beispiel nach '{bsp_path}' und Lösung nach '{loe_path}'")
     with open(bsp_path, "w") as f:

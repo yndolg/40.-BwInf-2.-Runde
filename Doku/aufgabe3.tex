@@ -2,6 +2,8 @@
 
 \input{preamble.tex}
 
+\newsavebox{\smallOutputBox}
+
 \begin{document}
 
 \maketitle
@@ -353,8 +355,38 @@ Außerdem werden für jede Generation 10 Individuen der Vorgängergeneration üb
 
 
 \section{Beispiele}
-Genügend Beispiele einbinden! Die Beispiele von der BwInf-Webseite sollten hier diskutiert werden, aber auch eigene Beispiele sind sehr gut – besonders wenn sie Spezialfälle abdecken. Aber bitte nicht 30 Seiten Programmausgabe hier einfügen!
+\subsection*{hexmax0.txt}
+\lstinputlisting{Ausgaben/hexmax0_umlegungen_kurz.txt}
+Um Platz zu sparen sind hier nur die Umlegungen abgedruckt, die mittels evolutionärem Algorithmus einen möglichst kurzen Weg verwenden. Die Umlegungen des Greedy-Algorithmus sind in der Zip-Datei zu finden.
+\subsection*{hexmax1.txt}
+\lstinputlisting{Ausgaben/hexmax1_umlegungen_kurz.txt}
+\subsection*{hexmax2.txt}
+\lstinputlisting[basicstyle=\tiny\ttfamily, breaklines=false]{Ausgaben/hexmax2_umlegungen_kurz.txt}
+\subsection*{hexmax3.txt}
+\lstinputlisting{Ausgaben/hexmax3.txt}
+\subsection*{hexmax4.txt}
+\lstinputlisting{Ausgaben/hexmax4.txt}
+\subsection*{hexmax5.txt}
+\lstinputlisting{Ausgaben/hexmax5.txt}
 
+\subsection{Laufzeiten}
+Die folgendende Tabelle zeigt die Laufzeiten, jeweils einmal ohne Ausgabe der Umlegungen, einmal mit Ausgabe von Umlegungen mit dem Greedy-Algorithmus und einmal mit Ausgabe von Umlegungen mit dem evolutionären Algorithmus.
+\begin{table}[H]
+    \centering
+    \begin{tabular}{llll}
+        \toprule
+        Beispiel & ohne  Umlegungen &  Greedy-Umlegungen & evolutionärer Algorithmus\\ \midrule
+        \texttt{hexmax0.txt} & \SI{1.8}{\milli\second} & \SI{1.8}{\milli\second} &  \SI{  63.0}{\milli\second}\\
+        \texttt{hexmax1.txt} & \SI{1.9}{\milli\second} & \SI{2.0}{\milli\second}&   \SI{  95.5}{\milli\second}\\
+        \texttt{hexmax2.txt} & \SI{2.1}{\milli\second} & \SI{2.8}{\milli\second}&   \SI{ 185.1}{\milli\second}\\
+        \texttt{hexmax3.txt} & \SI{4.2}{\milli\second} & \SI{9.2}{\milli\second}&   \SI{ 503.5}{\milli\second} \\
+        \texttt{hexmax4.txt} & \SI{3.7}{\milli\second} & \SI{9.6}{\milli\second}&   \SI{ 363.0}{\milli\second} \\
+        \texttt{hexmax5.txt} & \SI{268.4}{\milli\second} & \SI{853.2}{\milli\second}& \SI{6198.0}{\milli\second}\\
+        \bottomrule
+    \end{tabular}
+\end{table}
+Alle Beispiele werden in wenigen Millisekunden gelöst. Beispiel 5 ist deutlich größer, wird aber auch in unter einer Sekunde gelöst. 
+Die Laufzeit des evolutionären Algorithmus ist stark von der verwendeten Anzahl an Generationen abhängig. Je länger der Algorithmus läuft, desto besser werden die Ergebnisse.
 \section{Quellcode}
 Unwichtige Teile des Programms sollen hier nicht abgedruckt werden. Dieser Teil sollte nicht mehr als 2–3 Seiten umfassen, maximal 10.
 

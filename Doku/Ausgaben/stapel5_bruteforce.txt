@@ -1,0 +1,79 @@
+$ ./stapel bruteforce ../Eingabe/stapel5.txt
+Lösungsverfahren: Brute-Force
+Fortschritt: 2.64698e-21% 
+Fortschritt: 3.38824e-19% 
+Fortschritt: 1.0842e-17% 
+Fortschritt: 8.69903e-17% 
+Fortschritt: 6.93897e-16% 
+Fortschritt: 2.865e-15% 
+Fortschritt: 1.249e-14% 
+Fortschritt: 4.51138e-14% 
+Fortschritt: 1.77647e-13% 
+Fortschritt: 4.44089e-13% 
+Fortschritt: 1.42109e-12% 
+Fortschritt: 2.84226e-12% 
+Fortschritt: 5.69544e-12% 
+Fortschritt: 1.13909e-11% 
+Fortschritt: 2.28269e-11% 
+Fortschritt: 4.583e-11% 
+Fortschritt: 9.09939e-11% 
+Fortschritt: 1.81902e-10% 
+Fortschritt: 3.63798e-10% 
+Fortschritt: 7.27596e-10% 
+Fortschritt: 7.50333e-10% 
+Fortschritt: 1.45555e-09% 
+Fortschritt: 2.91038e-09% 
+Fortschritt: 4.37135e-09% 
+Fortschritt: 5.84421e-09% 
+Fortschritt: 1.16416e-08% 
+Fortschritt: 2.32831e-08% 
+Fortschritt: 2.3374e-08% 
+Fortschritt: 4.65661e-08% 
+Fortschritt: 5.23869e-08% 
+Fortschritt: 9.31337e-08% 
+Fortschritt: 1.86265e-07% 
+Fortschritt: 1.86293e-07% 
+Fortschritt: 3.72529e-07% 
+Fortschritt: 3.72711e-07% 
+Fortschritt: 7.45058e-07% 
+Fortschritt: 7.45423e-07% 
+Fortschritt: 1.49012e-06% 
+Fortschritt: 1.4903e-06% 
+Fortschritt: 2.241e-06% 
+Fortschritt: 2.98025e-06% 
+Fortschritt: 3.35277e-06% 
+Fortschritt: 5.96047e-06% 
+Fortschritt: 6.05361e-06% 
+Fortschritt: 1.19209e-05% 
+Fortschritt: 1.19326e-05% 
+Fortschritt: 2.38419e-05% 
+Fortschritt: 2.38419e-05% 
+Fortschritt: 2.42148e-05% 
+Fortschritt: 4.76837e-05% 
+Fortschritt: 4.76842e-05% 
+Fortschritt: 5.06639e-05% 
+Fortschritt: 9.53674e-05% 
+Fortschritt: 9.53907e-05% 
+Fortschritt: 0.000143051% 
+Fortschritt: 0.000190735% 
+Fortschritt: 0.000190944% 
+Fortschritt: 0.00038147% 
+Fortschritt: 0.00038147% 
+Fortschritt: 0.000382215% 
+Fortschritt: 0.000762939% 
+Fortschritt: 0.00076294% 
+Fortschritt: 0.000763871% 
+Fortschritt: 0.00114441% 
+Fortschritt: 0.00152588% 
+Fortschritt: 0.00152597% 
+Fortschritt: 0.00159778% 
+Fortschritt: 0.00305176% 
+Fortschritt: 0.00305176% 
+Die richtigen Karten wurden gefunden:
+ Karte  70 (1000010011101010001111100100110110011011100101010100010000001001)
+ Karte  77 (1101010001001101000111111110000110100010100111000100001001011011)
+ Karte 163 (1010111011001100100110001100110001011101001000000011011111100100)
+ Karte 167 (0101111111000111000000101111100010111010110101000100000011001000)
+ Karte 185 (1010000110101100101110111001100011011110111111010111000101111110)
+
+Das Lösen hat 207216 ms gedauert.

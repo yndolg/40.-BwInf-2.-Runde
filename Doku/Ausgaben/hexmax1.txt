@@ -1,0 +1,3 @@
+$ ./hexmax  ../Eingabe/hexmax1.txt
+Die größtmögliche Hex-Zahl ist 
+  FFFEA97B55.

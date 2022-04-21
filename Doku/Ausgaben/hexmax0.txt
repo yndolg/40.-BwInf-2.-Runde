@@ -1,0 +1,3 @@
+$ ./hexmax  ../Eingabe/hexmax0.txt
+Die größtmögliche Hex-Zahl ist 
+  EE4.

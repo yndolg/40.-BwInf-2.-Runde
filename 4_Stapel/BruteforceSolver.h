@@ -99,7 +99,7 @@ class BruteforceSolver {
     void printProgress(bitset<size> codeword) {
         // maximal einmal pro Sekunde ausgeben
         if (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - fortschritt_zeit).count() >=
-            1000) {
+            3000) {
             fortschritt_zeit = chrono::steady_clock::now();
 
             // Der Fortschritt wird aus dem aktuellen Codewort berechnet.

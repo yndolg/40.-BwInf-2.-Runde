@@ -71,7 +71,7 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
     // wenn ein Thread eine Lösung gefunden hat.
     vector<int> return_value(0);
 
-#pragma omp parallel default(none) firstprivate(rng) shared(return_value, n_cols, n_rows, instance, t, attempts)
+#pragma omp parallel default(none) firstprivate(rng) shared(return_value, n_cols, n_rows, instance, t, versuche)
     {
         vector<boost::dynamic_bitset<>> H_perm;
         for (int row = 0; row < n_rows; row++) {
