@@ -22,7 +22,7 @@ Sei
 \begin{align}
     f(p, e)
 \end{align}
-die Anzahl der Umlegungen, die mindestens benötigt werden, um insgesamt $e$ zusätliche Positionen im Teilwort $w_p, ..., w_n$ zu besetzten und eine valide Zahl zu erhalten. Die Zahl $e$ kann auch negativ sein, was dann bedeutet, dass Stäbchen von $e$ Positionen entfernt werden sollen. Dabei zählt nur das Entfernen von Stäbchen aus dem Teilwort als Umlegung. Ist $e$ positiv, so können diese Stäbchen ohne als Umlegung zu zählen abgelegt werden. Ist $e$ allerding negativ, so zählt das Nehmen der $e$ Stäbchen als Umlegung. Diese Konvention wird im Folgenden für alle Umlegungen verwendet. So wird sichergestellt, dass Umlegungen zwischen Zeichen immer nur einmal gezählt werden.
+die Anzahl der Umlegungen, die mindestens benötigt werden, um insgesamt $e$ zusätzliche Positionen im Teilwort $w_p, ..., w_n$ zu besetzten und eine valide Zahl zu erhalten. Die Zahl $e$ kann auch negativ sein, was dann bedeutet, dass Stäbchen von $e$ Positionen entfernt werden sollen. Dabei zählt nur das Entfernen von Stäbchen aus dem Teilwort als Umlegung. Ist $e$ positiv, so können diese Stäbchen, ohne als Umlegung zu zählen, abgelegt werden. Ist $e$ allerdings negativ, so zählt das Nehmen der $e$ Stäbchen als Umlegung. Diese Konvention wird im Folgenden für alle Umlegungen verwendet. So wird sichergestellt, dass Umlegungen zwischen Zeichen immer nur einmal gezählt werden.
 
 Ist $f(p, e)$ für alle $p$ und $e$ bekannt, kann das maximale Wort über ein Greedy-Verfahren rekonstruiert werden. 
 $f(p, e)$ kann über dynamische Programmierung effizient berechnet werden. 
@@ -61,7 +61,7 @@ Nun gilt die Rekurrenz
     f(p, e) = \begin{cases}
         0 &\text{, wenn } p > n \text{ und } e = 0 \\
         \infty &\text{, wenn } p > n \text{ und } e \neq 0\\  
-        \min_{x\in [0, 15]} f(p + 1, e + n(w_p, x)) + d(w_p, x) &\text{, anderfalls}
+        \min_{x\in [0, 15]} f(p + 1, e + n(w_p, x)) + d(w_p, x) &\text{, andernfalls}
     \end{cases}. \label{eq:rek}
 \end{align}
 Die ersten beiden Fälle geben die Werte für das leere Wort an. Muss kein extra Stäbchen gelegt werden, so ist das leere Wort ein valides Wort. Muss dagegen die Anzahl der Stäbchen verändert werden, so kann kein valides Wort mehr entstehen. 
@@ -114,7 +114,7 @@ Dafür muss eine Folge von konkreten Umlegungen gefunden werden, um vom Eingabew
 Ferner ist gefordert, dass während der Umlegungen ein Zeichen niemals vollständig geleert werden darf. 
 Die Grundidee dafür ist es, alle Positionen zu finden, in denen ein Stäbchen benötigt bzw. überflüssig ist. 
 Daraufhin muss immer ein Stäbchen von einer überflüssigen zu einer benötigten Position bewegt werden. 
-Da es genau so viele Positionen gibt, in denen ein Stäbchen benötigt wird, wie in denen ein Stäbchen überflüssig ist, ist es prinzipiell egal, welches Stäbchen wohin und in welcher Reihenfolge bewegt wird, forausgesetzt, es wird immer ein überschüssiges Stäbchen zu einer benötigten Position bewegt.
+Da es genau so viele Positionen gibt, in denen ein Stäbchen benötigt wird, wie in denen ein Stäbchen überflüssig ist, ist es prinzipiell egal, welches Stäbchen wohin und in welcher Reihenfolge bewegt wird, vorausgesetzt, es wird immer ein überschüssiges Stäbchen zu einer benötigten Position bewegt.
 Die Anzahl der Umlegungen ist immer gleich. 
 Allerdings muss darauf geachtet werden, dass keine Stelle zu einem Zeitpunkt vollständig geleert wird. 
 \begin{algorithm}
@@ -170,17 +170,17 @@ Die for-Schleife aus Zeile 4 wird $n$-Mal ausgeführt.
 Die Zeilen 5-12 benötigen pro Ausführung $\Theta(1)$ Laufzeit, da die for-Schleife in Zeile 5 immer 7-Mal ausgeführt wird und jeweils eine konstante Laufzeit pro Iteration hat. 
 
 Die while-Schleife in Zeile 13 wird während des gesamten Algorithmus nicht öfter als $7n$-Mal aufgerufen, da jedes Segment nur einmal in die Listen eingefügt (und folglich auch herausgenommen) werden kann. Die Zeilen 13-17 benötigen also über alle Iterationen $O(n)$ Laufzeit.
-Die Gesamtlaufzeit von Algorithmus \ref{alg:moves} ist also 
+Für die Gesamtlaufzeit von Algorithmus \ref{alg:moves} ergibt sich also 
 \begin{align*}
     T(n) &= n \cdot \Theta(1) + O(n)\\
     T(n) &= \Theta(n).
 \end{align*}
-Die drei Algorithmen haben zusammen eine Laufzeit von 
+Zusammen haben die drei Algorithmen eine Laufzeit von 
 \begin{align*}
     T(n, m) &= \Theta(n) + \Theta(nm) + \Theta(n)\\
     T(n, m) &= \Theta(nm).
 \end{align*}
-Die Laufzeit des Lösungsverfahren wächst also asymptotisch linear zur Länge des Wortes und zur Maximalzahl der Umlegungen. 
+Die Laufzeit des Lösungsverfahrens wächst also asymptotisch linear zur Länge des Wortes und zur Maximalzahl der Umlegungen. 
 Da auch der konstante Faktor relativ gering ist, reicht diese Laufzeit in der Praxis auch zum Lösen von sehr großen Instanzen.
 
 \subsection{Analyse des Speicherbedarfs}
@@ -189,7 +189,7 @@ Das $dp$-Array von Algorithmus \ref{alg:precalc}benötigt insgesamt $n \cdot (2m
 Die Rekonstruktion verwendet lediglich die Ganzzahlen $e, p, z$ und $x$, die einen Speicherbedarf von $\Theta(1)$ haben. Der String $s$ wird genauso lang wie das Eingabewort und benötigt daher $\Theta(n)$ Speichereinheiten. 
 Insgesamt hat Algorithmus \ref{alg:reconstruct} also einen Speicherbedarf von $\Theta(1) + \Theta(n) = \Theta(n)$.
 
-Algorithmus \ref{alg:moves} verwendet zwei Listen. Da jedes Segment nur maximal einemal in eine der Listen eingefügt wird, können diese zusammen niemals mehr als $7n \in O(n)$ Speicher benötigen. 
+Algorithmus \ref{alg:moves} verwendet zwei Listen. Da jedes Segment nur maximal einmal in eine der Listen eingefügt wird, können diese zusammen niemals mehr als $7n \in O(n)$ Speicher benötigen. 
 Die drei Algorithmen haben insgesamt einen Speicherbedarf von $\Theta(n) + \Theta(nm) + O(n)= \Theta(nm)$.
 
 Damit wächst auch der Speicherbedarf linear mit der Anzahl der Stellen und Anzahl der Umlegungen. 
@@ -216,15 +216,14 @@ Der Algorithmus soll die größte Hex-Zahl ausgeben, die mit $\leq m$ Umlegungen
 Der Beweis erfolgt über eine Invariante: Nach $p$ Durchläufen der äußeren for-Schleife gilt (1) $s$ ist die maximale Zahl, die mit den ersten $p$ Stellen gebildet werden kann, (2) $e$ ist die Anzahl der überschüssigen Stäbchen, wenn die ersten $p$ Stellen zu $s$ umgelegt werden und (3) $z$ ist die Anzahl der noch übrigen Umlegungen.
 Mit $s = \epsilon$, $z = m$ und $e = 0$ gelten alle drei Bedingungen vor der ersten Iteration.
 
-In jeder Iteration wird die größte Ziffer für die Stelle $p$ zu $s$ hinzugefügt, bei der es noch möglich ist, mit den danach noch übrigen Umlegungen das Wort $w_{p+1}, ..., w_n$ mit den dann übrigen Stäbchen zu einer validen Hexzahl umzulegen. 
+In jeder Iteration wird die größte Ziffer für die Stelle $p$ zu $s$ hinzugefügt, bei der es noch möglich ist, mit den danach noch übrigen Umlegungen das Wort $w_{p+1}, ..., w_n$ mit den dann übrigen Stäbchen zu einer validen Hex-Zahl umzulegen. 
 Die so entstandene Zahl ist die größtmögliche Zahl, die mit den ersten $p$ Stellen gebildet werden kann, da die ersten $p-1$ Stellen bereits die größtmögliche Zahl waren und der Stelle $p$ ebenfalls die größtmögliche Stelle zugewiesen wurde. 
 
-Dies kann über einen Wiederspruchsbeweis gezeigt werden: Gäbe es eine größere Zahl als die gefundene, so müsste diese entweder eine größere Zahl in den ersten $p-1$ Stellen oder an der Stelle $p$ haben. Beides ist aber bereits maximal. Folglich kann es keine größere Zahl geben, die die ersten $p$ Stellen verwendet. Auch dieses Problem hat \textit{optimal substructure}.
+Dies kann über einen Widerspruchsbeweis gezeigt werden: Gäbe es eine größere Zahl als die gefundene, so müsste diese entweder eine größere Zahl in den ersten $p-1$ Stellen oder an der Stelle $p$ haben. Beides ist aber bereits maximal. Folglich kann es keine größere Zahl geben, die die ersten $p$ Stellen verwendet. Auch dieses Problem hat \textit{optimal substructure}.
 
 Bedingung (1) ist also auch nach einem Durchlauf der Schleife noch korrekt. Wurde eine Ziffer für Stelle $p$ ausgewählt, werden $e$ und $z$ entsprechend angepasst, sodass auch die Bedingungen (2) und (3) weiter zutreffen. 
 
 Folglich ist $s$ nach $n$-Iterationen die maximale Zahl, die in den ersten $n$ Stellen mit höchstens $m$ Umlegungen gebildet werden kann und Algorithmus \ref{alg:reconstruct} korrekt.
-% TODO: vllt. noch begründen, warum eine stelle nie geleert wird
 
 \subsection{Algorithmus \ref*{alg:moves}}
 
@@ -240,7 +239,7 @@ Da $|e| = |n|$, werden  alle Elemente aus den Listen wieder entfernt und umgeleg
 Nun bleibt zu zeigen, dass bei diesen Umlegungen eine Stelle niemals vollständig geleert wird.
 Um eine Position zwischen zwei Umlegungen vollständig zu leeren, müssten zuerst alle Stäbchen der Stelle in andere Stellen verschoben werden, sodass die Stelle leer werden kann, und dann die nun benötigten Stäbchen aus anderen Stellen in diese Stelle bewegt werden. 
 Wenn eine Stelle komplett geleert wird, kann es also keine Umlegung innerhalb dieser Stelle geben. 
-Es ist immer möglich ein Stäbchen innerhalb der Ziffer umzulegen, um zu verhindern, dass die Stelle vollständig geleert wird. Eine Außname ist, wenn in einer Stelle nur Stäbchen entfernt bzw. hinzugefügt werden müssen. In diesem Fall kann die Stelle aber auch nicht geleert werden, da keine Hex-Ziffer leer ist. 
+Es ist immer möglich ein Stäbchen innerhalb der Ziffer umzulegen, um zu verhindern, dass die Stelle vollständig geleert wird. Eine Ausnahme ist, wenn in einer Stelle nur Stäbchen entfernt bzw. hinzugefügt werden müssen. In diesem Fall kann die Stelle aber auch nicht geleert werden, da keine Hex-Ziffer leer ist. 
 In den Zeilen 5-12 werden alle fehlenden bzw. überschüssigen Stäbchen den Listen $e$ und $n$ an deren Ende hinzugefügt. 
 Da der Algorithmus in den Zeilen 13-17 die fehlenden bzw. überschüssigen Stellen vom Ende der Liste verwendet, wird immer eine Umlegung innerhalb der Stelle durchgeführt, sofern dies möglich ist.
 Folglich wird beim Durchführen der durch den Algorithmus ausgegeben Umlegungen nie ein Zeichen vollständig geleert und auch Algorithmus \ref{alg:moves} ist korrekt.
@@ -252,7 +251,7 @@ Er kann immer nur ein Stäbchen gleichzeitig in der Hand halten.
 Gesucht ist also eine Folge von abwechselnd Positionen, an denen ein Stab übrig ist und Positionen, an denen ein Stäbchen benötigt wird, bei der die Abstände zwischen benachbarten Positionen möglichst gering sind und alle Positionen besucht werden.
 Jedem Stäbchen wird dabei die Position des Mittelpunktes mit $x$- und $y$-Koordinate zugewiesen. 
 
-Zum Lösen dieses Problems, welches ein Spezialfall des Problem des Handlungsreisenden (TSP) ist, wird ein evolutionärer Algorithus verwendet. 
+Zum Lösen dieses Problems, welches ein Spezialfall des Problems des Handlungsreisenden (TSP) ist, wird ein evolutionärer Algorithmus verwendet. 
 Dieser findet nicht unbedingt die beste Lösung, da es sich um ein heuristisches Verfahren handelt, dafür kann der Algorithmus aber auch bei sehr großen Instanzen in angemessener Zeit eine akzeptable Lösung finden. 
 
 Evolutionäre Algorithmen sind Metaheuristiken zum Lösen von Optimierungsproblemen, die am Prozess der Evolution in der Natur inspiriert sind. 
@@ -264,15 +263,15 @@ Dabei werden die Lösungen noch leicht zufällig verändert (Mutation), um sich 
 Optional kann auch aus zwei Eltern-Individuen durch Crossover ein Individuum der nächsten Generation erstellt werden. 
 Nach einer bestimmten Anzahl an Generationen wird die beste bisher gefundene Lösung zurückgegeben.
 
-Für dieses Problem werden werden mögliche Lösungen als Liste von Positionen modelliert, die Severin in dieser Reihenfolge abgehen muss. 
-Bei jeder Position mit geradem Index wird ein Stäbchen aufgenommen und dann bei der nächsten Positon (mit ungeradem Index) abgelegt. 
-Bei der Mutation werden dann (potentiell mehrfach) zwei gerade bzw. zwei ungerade Positonen zufällig miteinander ausgetauscht. 
-Für jedes Individuum wird die Länge des Weges berechnet, indem die Summe der euklidischen Distanzen zwischen den in der Lösung benachbarten Positonen berechnet wird.
+Für dieses Problem werden mögliche Lösungen als Liste von Positionen modelliert, die Severin in dieser Reihenfolge abgehen muss. 
+Bei jeder Position mit geradem Index wird ein Stäbchen aufgenommen und dann bei der nächsten Position (mit ungeradem Index) abgelegt. 
+Bei der Mutation werden dann (potenziell mehrfach) zwei gerade bzw. zwei ungerade Positionen zufällig miteinander ausgetauscht. 
+Für jedes Individuum wird die Länge des Weges berechnet, indem die Summe der euklidischen Distanzen zwischen den in der Lösung benachbarten Positionen berechnet wird.
 Schließlich werden alle Individuen einer Generation sortiert und die besten ausgewählt.
-Die Selektion findet nach Rang statt, da sich so (gegenüber z.B. der Fittness-proportionalen Selektion) auch kleine Unterschiede in den Längen durchsetzen können. 
+Die Selektion findet nach Rang statt, da sich so (gegenüber z.B. der Fitness-proportionalen Selektion) auch kleine Unterschiede in den Längen durchsetzen können. 
 Bei der Mutation muss zusätzlich noch die Bedingung beachtet werden, dass eine Stelle nie vollständig geleert werden kann.
 Ist dies der Fall, wird das Individuum verworfen und eine neue Mutation durchgeführt. 
-Zusätzlich wird der sogenannte Elitismus (eng. Elitsm) verwendet, um zu verhindern, dass sich die Lösungen über Generationen verschlechtern. 
+Zusätzlich wird der sogenannte Elitismus (eng. elitsm) verwendet, um zu verhindern, dass sich die Lösungen über Generationen verschlechtern. 
 Das heißt, dass die besten $n$ Individuen aus der letzten Generation ohne Mutation in die nächste übernommen werden. 
 Außerdem werden in jeder Generation eine geringe Menge von vollständig zufällig generierten Individuen hinzugefügt, was dem Algorithmus helfen kann, aus einem lokalen Minimum zu entkommen. 
 Die Population enthält zu Beginn bereits die Lösung von Algorithmus \ref{alg:moves}. So kann der evolutionäre Algorithmus diese Lösung als Ausgangspunkt verwenden und verbessern. 
@@ -287,7 +286,8 @@ In der Praxis findet dieser evolutionäre Algorithmus in allen Beispielen von de
 
 
 \section{Umsetzung}
-Die Lösung wurde in \texttt{C++} implementiert. Die drei Algorithmen sind in der Klasse \lstinline{DPSolver} implementiert. Die Datei \texttt{main.cpp} liest die Argumente und Problemdefinition ein, ruft den \lstinline{DPSolver} auf und gibt das Ergebnis aus. 
+Die Lösung wurde in \texttt{C++} implementiert. Die drei Algorithmen sind in der Klasse \lstinline{DPSolver} implementiert. 
+Die Datei \texttt{main.cpp} liest die Argumente und Problemdefinition ein, ruft den \lstinline{DPSolver} auf und gibt das Ergebnis aus. 
 
 Eine mögliche Belegung wird durch die Klasse \lstinline{Zustand} modelliert. 
 Jede einzelne Stelle wird kompakt als \lstinline{std::bitset<7>} dargestellt. 
@@ -319,14 +319,14 @@ Die Methode \lstinline{visualisiereUmlegungen()} visualisiert dann alle Zwischen
 
 Nun zur Implementation des eigentlichen Lösungsverfahrens. 
 Die \lstinline{solve()}-Funktion  der Klasse \lstinline{DPSolver} initialisiert die Variablen und ruft dann die Methoden \lstinline{dpVorberechen()} und \lstinline{rekonstruiere()}  auf, die Algorithmus \ref{alg:precalc} bzw. Algorithmus \ref{alg:reconstruct} implementieren.
-Als Memoization-Tabelle wird ein Vektor verwendet, die Funktion \lstinline{memoKey(int pos, int d)} gibt an an, an welcher Position im Vektor ein Wert gespeichert ist. 
+Als Memoization-Tabelle wird ein Vektor verwendet, die Funktion \lstinline{memoKey(int pos, int d)} gibt an, an welcher Position im Vektor ein Wert gespeichert ist. 
 Zusätzlich wird die Funktion \lstinline{getMemo()} verwendet, um auf die Werte im \lstinline{memo}-Vektor zuzugreifen. 
 So kann gewährleistet werden, dass für Werte, die zu viele Umlegungen verwenden $\infty$ zurückgegeben wird, ohne diese Werte extra zu speichern. 
 Die Funktion \lstinline{unterschied(x1, x2)} gibt sowohl $d(x_1, x_2)$ als auch $n(x_1, x_2)$ in einem \lstinline{std::pair<int, int>} zurück. 
 Ansonsten folgt die Implementation der beiden Funktionen dem oben beschriebenen Pseudocode. 
 Algorithmus \ref{alg:moves} ist in \lstinline{getMoves()} implementiert. 
 Die Umlegungen werden als Vektor von Paaren von Positionen zurückgegeben.
-Eine Position ist dabei ebenfalls ein Paar, der erste Wert gibt die Stelle und der zweite Wert die Positon innerhalb der Stelle nach Abbildung \ref{fig:indizes} an.
+Eine Position ist dabei ebenfalls ein Paar, der erste Wert gibt die Stelle und der zweite Wert die Position innerhalb der Stelle nach Abbildung \ref{fig:indizes} an.
 
 Zum Compilieren des Codes wird ein \texttt{C++-17}-fähiger Compiler benötigt.
 Als Build-System wird CMake verwendet, der Code kann wie üblich über 
@@ -345,7 +345,7 @@ Eine Position ist, wie beim Greedy-Algorithmus, ein \lstinline{std::pair<int, in
 In der \lstinline{length()}-Funktion wird die Länge des Weges für eine mögliche Lösung berechnet. 
 Dafür werden die Strecken zwischen den Segmenten addiert. 
 Um die Strecken genau berechnen zu können, ist es wichtig, die Positionen der Stäbchen in einem Koordinatensystem festzulegen. 
-Dafür wird jeweils der Mittelpunkt der Segmente verwendendet und die Zeichen sind eine Längeneinheit breit und zwei Längeneinheiten hoch.
+Dafür wird jeweils der Mittelpunkt der Segmente verwendet und die Zeichen sind eine Längeneinheit breit und zwei Längeneinheiten hoch.
 Im \lstinline{POSITIONS}-Vektor sind die $x$- und $y$-Koordinaten der Segmente festgelegt. 
 Die eigentliche Distanz zwischen zwei Stäbchen in der Zahl wird dann über den Satz des Pythagoras ermittelt. 
 
@@ -374,7 +374,7 @@ Um Platz zu sparen sind hier nur die Umlegungen abgedruckt, die mittels evolutio
 \lstinputlisting{Ausgaben/hexmax5.txt}
 
 \subsection{Laufzeiten}
-Die folgendende Tabelle zeigt die Laufzeiten, jeweils einmal ohne Ausgabe der Umlegungen, einmal mit Ausgabe von Umlegungen mit dem Greedy-Algorithmus und einmal mit Ausgabe von Umlegungen mit dem evolutionären Algorithmus.
+Die folgende Tabelle zeigt die Laufzeiten, jeweils einmal ohne Ausgabe der Umlegungen, einmal mit Ausgabe von Umlegungen mit dem Greedy-Algorithmus und einmal mit Ausgabe von Umlegungen mit dem evolutionären Algorithmus.
 \begin{table}[H]
     \centering
     \begin{tabular}{llll}
