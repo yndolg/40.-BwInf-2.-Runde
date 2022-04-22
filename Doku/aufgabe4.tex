@@ -1,5 +1,7 @@
 \documentclass[a4paper,10pt,ngerman]{scrartcl}
 
+\newcommand{\Aufgabe}{Bonusaufgabe: Zara Zackigs Zurückkehr} 
+
 \input{preamble.tex}
 
 \begin{document}
@@ -22,7 +24,7 @@ gilt. $wt(x)$ bezeichnet dabei das Hamming-Gewicht des Vektors, also die Anzahl 
 Dieses Problem wird als \textit{Minimales-Codewort-Problem} (eng. minimum codeword problem) bezeichnet und wurde bereits eingehend untersucht, unter anderem, da es eine zentrale Rolle für die Sicherheit des McElice-Kryptosystems spielt. 
 
 In diesem Kontext wird $\mathbf{H}$ als Kontrollmatrix (eng. parity check matrix) bezeichnet.
-Alle Vektoren $x \in \mathbb{F}^m_2$ für die $x \mathbf{H} = \mathbf{0}$ gilt,  werden als Codewörter bezeichnet und bilden zusammen einen linearen Blockcode. Das Produkt eines beliebigen Vektors $z \in \mathbb{F}^m_2$ mit $\mathbf{H}$ ist ein Syndrom von $z$ bezeichnet. Ein Codewort ist also ein Vektor, dessen Syndrom der Nullvektor ist. 
+Alle Vektoren $x \in \mathbb{F}^m_2$ für die $x \mathbf{H} = \mathbf{0}$ gilt,  werden als Codewörter bezeichnet und bilden zusammen einen linearen Blockcode. Das Produkt eines beliebigen Vektors $z \in \mathbb{F}^m_2$ mit $\mathbf{H}$ wird als Syndrom von $z$ bezeichnet. Ein Codewort ist also ein Vektor, dessen Syndrom der Nullvektor ist. 
 
 Berlekamp, McElice und Tilborg \cite{berlekampInherentIntractabilityCertain1978} haben gezeigt, dass dieses Problem zur Klasse der NP-völlständigen Probleme gehört, indem sie das 3-dimensionale Matchingproblem darauf reduziert haben, welches wiederum eins von Karps 21 NP-vollständigen Problemen ist.
 Folglich gilt es als sehr unwahrscheinlich, dass es einen Algorithmus gibt, der das Problem in polynomieller Laufzeit löst. 
@@ -30,37 +32,37 @@ Im Folgenden sind zwei mögliche Lösungsansätze dargestellt.
 Der zweite ist ein Brute-Force-Ansatz, bei dem das Problem zunächst mithilfe von linearer Algebra vereinfacht und dann durch Ausprobieren aller restlichen Möglichkeiten gelöst wird.
 Dieses Verfahren ist sehr effektiv, wenn die die Karten viele Bits haben und und diese Bits linear unabhängig sind, da dann nur sehr wenige Stellen zum Ausprobieren übrig bleiben. Haben die Karten aber wenig Bits oder gibt es sehr viele Karten, kommt der Brute-Force-Ansatz schnell an seine Grenzen.
 
-Der erste Ansatz basiert auf dem \textit{Information-Set-Decoding} und ist in den meisten Fällen sehr viel effizienter, wenn auch immernoch exponentiell in der Laufzeit. Es handelt sich jedoch um einen Las-Vegas-Algorithmus, was heißt, dass die Laufzeit nicht deterministisch ist und der Algorithmus auch nicht verwendet werden kann, um mit Sicherheit zu zeigen, dass es keine Lösung gibt. 
+Der erste Ansatz basiert auf dem \textit{Information-Set-Decoding} und ist in den meisten Fällen sehr viel effizienter, wenn auch immernoch exponentiell in der Laufzeit. Es handelt sich um einen Las-Vegas-Algorithmus, was heißt, dass die Laufzeit nicht deterministisch ist und der Algorithmus auch nicht verwendet werden kann, um mit Sicherheit zu zeigen, dass es keine Lösung gibt. 
 Information-Set-Decoding-Algorithmen sind die besten heute bekannten Algorithmen zum Lösen des Minimalen-Codewort-Problems.
 
 \subsection{Lösungsansatz 1: Information-Set-Decoding}
-Da das Problem eine zentrale Rolle für die Sicherheit von mehrern Post-Quantum-Kryptosystemen essentiell ist, wurden verschiedene Algorithmen entwickelt, die in der Praxis deutlich effizienter als ein Brute-Force-Ansatz sind. 
+Da das Problem eine zentrale Rolle für die Sicherheit von mehrern Post-Quantum-Kryptosystemen spielt, wurden verschiedene Algorithmen entwickelt, die in der Praxis deutlich effizienter als ein Brute-Force-Ansatz sind. 
 Diese basieren auf dem sogenannten Information-Set-Decoding (ISD). 
 Es handelt sich um randomisierte Las-Vegas-Algorithmen, das heißt, dass sie zwar immer das richtige Ergebnis zurückgegeben, die Laufzeit aber variiert. 
 Im Kern der Algorithmen steht eine Prozedur, die mit einer Wahrscheinlichkeit $p$ eine Lösung findet. Findet sie keine Lösung, wird sie solang wiederholt, bis sie eine Lösung gefunden hat. 
 
 Die Ursprungsform des ISD geht auf Prange \cite{prangeUseInformationSets1962} zurück.
 Später wurde der Algorithmus unter anderem von Lee und Brickell \cite{leeObservationSecurityMcEliece1988} und Stern \cite{sternMethodFindingCodewords1989} verbessert. 
-Bei allen Algorithmen gibt es eine Abwägung zwischen der Laufzeit pro Versuch, der Wahrscheinlichkeit, dass der Versucht glückt und der Komplexität des Algorithmus. Der Algorithmus von Lee und Brickell verwendet beispielsweise mehr Zeit pro Versuch als der von Prange, hat dafür aber eine deutlich höhere Erfolgswahrscheinlichkeit. 
+Bei allen Varianten gibt es eine Abwägung zwischen der Laufzeit pro Versuch, der Wahrscheinlichkeit, dass der Versucht glückt und der Komplexität des Algorithmus. Der Algorithmus von Lee und Brickell verwendet beispielsweise mehr Zeit pro Versuch als der von Prange, hat dafür aber eine deutlich höhere Erfolgswahrscheinlichkeit. 
 Zur Lösung des Problems wurde der Algorithmus von Lee und Brickell verwendet, da er für die gegebenen Beispieldaten völlig ausreichend und nicht unnötig komplex ist. Das vereinfacht auch die theoretische Analyse. 
 \begin{algorithm}
     \caption{Finden der Umlegungen}
     \label[]{alg:moves}
     \begin{algorithmic}[1]
-        \Procedure{LeeBrickellISD}{$H,t$}
+        \Procedure{LeeBrickellISD}{$\mathbf{H}_0,t$}
         \While{True}
-            \State generiere zufällige Permutation $p$
-            \State permutieren die Spalten von $\mathbf{H}$ nach $p$
+            \State generiere zufällige Permutation $\pi$
+            \State $\mathbf{H} \gets $ $\mathbf{H}_0$, mit den Spalten nach $\pi$ permutiert
             \State $\mathbf{H}$ in reduzierte Stufenform (eng. reduced row-echelon form) bringen
-            \State sei $I$ die Menge aller Spalten, die nur noch eine Eins enthalten
+            \State sei $I$ die Menge aller Spalten, die die erste Eins einer Zeile enthalten
             \For{ $x \gets $  $p$-große Teilmengen von Spalten $\notin I$}
             \State sei $s$ die Summe der Spalten $x$
-            \If{$wt(s) == t - p  + 1$}
+            \If{$wt(s) == t - p $}
                 \State $e_m = \begin{cases}
-                    1, \text{wenn } m \in p \text{ oder } (s(\textbf{H}_I^{-1}))_m = 1 \\
+                    1, \text{wenn } m \in x \text{ oder } (s(\textbf{H}_I^{-1}))_m = 1 \\
                     0, \text{andernfalls}
                 \end{cases}$ 
-                \State permutiere $e$ mit $p^{-1}$
+                \State permutiere $e$ mit $\pi^{-1}$
                 \State \textbf{return} $e$
             \EndIf
             \EndFor
@@ -69,7 +71,7 @@ Zur Lösung des Problems wurde der Algorithmus von Lee und Brickell verwendet, d
     \end{algorithmic}
 \end{algorithm}
 Für jeden Versuch wird eine zufällige Permutation generiert und die Spalten von $\mathbf{H}$ entsprechend permutiert. Daraufhin wird $\mathbf{H}$ in reduzierte Stufenform gebracht, beispielsweise mit dem Gauß-Jordan-Algorithmus.
-Die Matrix wird nun nach Spalten in zwei Teile geteilt: die Submatrix $\mathbf{H}_I$ enthält alle Spalten, die lediglich eine 1 enthalten und ist folglich invertierbar und eine Submatrix aus den restlichen Spalten. 
+Die Matrix wird nun nach Spalten in zwei Teile geteilt: die Submatrix $\mathbf{H}_I$ enthält alle Spalten, die die erste Eins einer Zeile haben, und ist folglich invertierbar und eine Submatrix aus den restlichen Spalten. 
 Da die Spalten am Anfang zufällig permutiert wurden, wird so eine in jedem Durchlauf zufällige Auswahl von Spalten gefunden, die eine invertierbare Submatrix bilden. 
 Nun werden alle Summen von $p$-großen Teilmengen der Spalten $\notin I$ berechent. 
 Wenn im gesuchten Wort in dieser zufälligen Permutation genau $p$ Einsen in den Positionen $\notin I$ sind, können die restlichen Einsen in Spalten $\in I$ über lineare Algebra direkt bestimmt werden. 
@@ -79,23 +81,23 @@ $p$ ist ein Parameter des Algorithmus und sollte eine relativ kleine Zahl sein, 
 
 \subsubsection{Laufzeit- und Speicherkomplexität}
 \label{sec:runtime}
-Um die Analyse zu Vereinfachen, wird davon ausgegangen, dass alle Zeilen von $\mathbf{H}$ linear unabhängig sind. Um dies sicherzustellen können vor dem Ausführen des Algorithmuses die linear abhängigen Zeilen mit dem Gauß-Verfahren entfernt und $m$ entsprechend angepasst werden. 
+Um die Analyse zu vereinfachen, wird davon ausgegangen, dass alle Zeilen von $\mathbf{H}$ linear unabhängig sind. 
+Um dies sicherzustellen, können vor dem Ausführen des Algorithmus die linear abhängigen Zeilen mit dem Gauß-Verfahren entfernt und $m$ entsprechend angepasst werden. 
 Zunächst wird die Laufzeit- und Speicherkomplexität von einem einzigen Durchlauf analysiert. 
-Die zufällige Permutation $p$ kann beispielsweise mit dem Fisher-Yates-Algorithmus in $\Theta(n)$ berechnet werden, das Permutieren der Matrix benötigt dann aber $\Theta(nm)$ Laufzeit, da $n$ Spalten getauscht werden müssen, die jeweils aus $m$ Elementen bestehen.
-Daraufhin muss $\mathbf{H}$ in reduzierte Stufenform gebracht werden, beispielsweise mit dem Gauss-Jordan-Algorithmus. 
-Eine detaillierte Beschreibung des Gauss-Jordan-Algorithmus und der der dazugehörigen Laufzeitanalyse würde jedoch den Rahmen sprengen.
+Die zufällige Permutation $\pi$ kann beispielsweise mit dem Fisher-Yates-Algorithmus in $\Theta(n)$ generiert werden, das Permutieren der Matrix benötigt dann aber $\Theta(nm)$ Laufzeit, da $n$ Spalten kopiert werden müssen, die jeweils aus $m$ Elementen bestehen.
+Daraufhin muss $\mathbf{H}$ in reduzierte Stufenform gebracht werden, beispielsweise mit dem Gauß-Jordan-Algorithmus. 
+Eine detaillierte Beschreibung des Gauß-Jordan-Algorithmus und der der dazugehörigen Laufzeitanalyse würde hier den Rahmen sprengen.
 Die implementierte Version des Algorithmus hat eine Laufzeit von $\Theta(n^2m)$.
-Durch diesen Schritt könnte die Anzahl der Zeilen in der Matrix geringer werden. 
-Im Worst-Case gehe ich jedoch davon aus, dass alle Zeilen linear unabhängig sind und die Matrix weiterhin $m$ Zeilen hat. 
-Die Menge $I$ enthält im Worst-Case folglich genau $m$ Spalten.
+Die Menge $I$ enthält folglich genau $m$ Spalten.
+$m$ bezieht sich hier, wie oben beschrieben, auf die Anzahl der linear unabhängigen Zeilen in $\mathbf{H}$.
 Für das Aufteilen in $I$ muss in jeder Zeile nach der ersten Eins gesucht werden, was eine Laufzeit von $O(nm)$ hat.
 Die for-Schleife in Zeile 7 benötigt $\binom{n-m}{p}$ Durchläufe.
 Das Berechnen der Summe der Spalten, deren Hamming-Gewicht und das Überprüfen der if-Abfrage benötigt $\Theta(pm)$ Laufzeit. 
-Ohne die Zeilen 10, 11 und 12 hat die for-Schleife also eine Worst-Case Laufzeit von $\binom{n-m}{p}\Theta(pm)$.
-Die Zeilen 10, 11 und 12 werden pro Aufruf der Prozedur nur ein einziges Mal ausgeführt. Werden die in Zeile 6 gefundenen Positionen gespeichert und wiederverwendet, ist die Berechnung von $e$ in $\Theta(mp)$ möglich. 
+Ohne die Zeilen 10, 11 und 12 hat die for-Schleife also eine Laufzeit von $\binom{n-m}{p}\Theta(pm)$.
+Die Zeilen 10, 11 und 12 werden pro Aufruf der Prozedur nur ein einziges Mal ausgeführt. Werden die in Zeile 6 gefundenen Positionen gespeichert und wiederverwendet, ist die Berechnung von $e$ in $\Theta(pm)$ möglich. 
 Insgesamt ergibt sich pro Iteration eine Laufzeit von 
 \begin{align*}
-    T(n, m) &= \Theta(n) + \Theta(nm) + \Theta(n^2m) + \binom{n-m}{p} \cdot \Theta(pm) + \Theta(mp)\\
+    T(n, m) &= \Theta(n) + O(nm) + \Theta(n^2m) + \binom{n-m}{p} \cdot \Theta(pm) + \Theta(pm)\\
             &= \Theta(n^2m) + \binom{n-m}{p}\cdot \Theta(pm)
 \end{align*}
 
@@ -129,7 +131,7 @@ Im Folgenden ist $E(X)$ für verschiedene $p$ für die Beispiele von der BWINF-W
     \end{tabular}
 \end{table}
 Es ist zu erkennen, dass meistens schon wenige Durchläufe genügen, um eine Lösung zu finden. 
-Für die Implementation habe ich $p=1$ verwendet, da die Erfolgswahrscheinlichkeit auch für größere Instanzen ausreicht und die Implementation vereinfacht wird. Es wäre natürlich auch denkbar, $p$ an die Dimensionen der Eingabedaten und die Geschwindigkeit des Computers dynamisch anzupassen.
+Für die Implementation wurde $p=1$ verwendet, da die Erfolgswahrscheinlichkeit auch für größere Instanzen ausreicht und die Implementation dadurch vereinfacht wird. Es wäre natürlich auch denkbar, $p$ an die Dimensionen der Eingabedaten und die Geschwindigkeit des Computers dynamisch anzupassen.
 
 Der Erwartungswert für die Laufzeit liegt damit bei 
 \begin{align*}
@@ -137,59 +139,66 @@ Der Erwartungswert für die Laufzeit liegt damit bei
 \end{align*}
 
 Die Speicherkomplexität beträgt $\Theta(nm)$, da die $m \times n$-Matrix einmal kopiert werden muss, um die Permutation anzuwenden. Theoretisch wäre diese Kopie durch ein effizienteres Verfahren zur Anwendung der Permutation vermeidbar, der Speicherbedarf wird aber vermutlich keine Einschränkung für den Algorithmus darstellen, da die Laufzeiten bei derartig großen Instanzen nicht mehr vertretbar wäre. 
-Neben der Kopie der Matrix werden die Permutation und die Positionen der Pivots des Gauss-Algorithmus gepeichert, was zusätzlich $O(n)$ Speichereinheiten benötigt. 
+Neben der Kopie der Matrix werden die Permutation und die Positionen der Pivots des Gauß-Algorithmus gepeichert, was zusätzlich $\Theta(n)$ Speichereinheiten benötigt. 
 
 \subsection{Lösungsansatz 2: Brute-Force}
-Die Idee des Brute-Force-Ansatzes ist es, die Matrix zunächst über das Gauß-Verfahrens in Stufenform zu bringen. Daraufhin muss resubstituiert werden, um zur reduzierten Stufenform zu gelangen. 
-Da die Gleichungssysteme aber unterbestimmt sind, gibt es freie Variablen.
+Die Idee des Brute-Force-Ansatzes ist es, die Matrix zunächst über das Gauß-Verfahren in Stufenform zu bringen. Daraufhin muss resubstituiert werden, um zur reduzierten Stufenform zu gelangen. 
+Da das Gleichungssystem $x\mathbf{H} = \mathbf{0}$ aber immer unterbestimmt ist, damit es überhaupt eine Lösung mit $x \neq 0$ gibt, gibt es freie Variablen.
 In diesem Fall wird rekursiv versucht, zuerst die 0 und dann die 1 an dieser Stelle zu substituieren. 
 Hat das so gefundene Wort die richtige Anzahl an Einsen, wird es als Lösung ausgegeben, andernfalls werden per Backtracking andere Werte für die freien Variablen eingesetzt. 
 Das Verfahren kann unter anderem dadurch etwas beschleunigt werden, dass abgebrochen wird, wenn bereits die maximale Anzahl an Einsen verwendet wurde oder es nicht mehr genug Variablen gibt, um die nötige Anzahl an Einsen zu erreichen. 
 
 Es folgt eine grobe Abschätzung der Laufzeit dieses Verfahrens.
-Die Anzahl der freien Variable, für die also per Backtracking potentiell beide Möglichkeiten ausprobiert werden müssen, ist $n-m$. Pro rekursivem Aufruf wird im Worst-Case $O(nm)$ Zeit für die Substitution verwendet. Zusammen mit dem Gauß-Jordan-Algorithmus, der zuvor ausgeführt wird, ergibt sich eine Laufzeit von 
+Die Anzahl der freien Variable, für die also per Backtracking potentiell beide Möglichkeiten ausprobiert werden müssen, ist $n-m$. Pro rekursivem Aufruf wird im Worst-Case $O(nm)$ Zeit für die Substitution verwendet. Zusammen mit dem Gauß-Verfahren, das zuvor ausgeführt wird, um zur Stufenform zu gelangen, ergibt sich eine Laufzeit von 
 \begin{align*}
-    T(n,m) = \Theta(n^2m) + O(2^{n-m})
-\end{align*}.
+    T(n,m) = \Theta(n^2m) + O(2^{n-m}).
+\end{align*}
 Das ist bei Instanzen, bei denen $n$ und $m$ relativ nah beineinander liegen bereits deutlich besser als ein reines Brute-Force, bei dem alle Kombinationen von Karten ausprobiert werden würden, was eine Laufzeit von $O(2^n)$ benötigen würde.
 Die Laufzeit ist dennoch in der Praxis meist deutlich langsamer als die des Information-Set-Decoding.  
 Das Verfahren hat aber den Vorteil, dass es vollständig derterministisch ist und es auch mit Sicherheit bestätigen kann, dass es keine Lösung gibt, wenn das der Fall ist. 
+Wenn $n$ und $m$ in etwa gleich groß sind, kann dieses Verfahren aufgrund des dann relativ keinen Exponenten effizienter als ISD sein.
 
 \subsection{Erweiterung: Generierung von größeren Beispielen}
-Beide Ansätze können die Beispiele vom BWINF in angemessener Zeit lösen.
-Der Information-Set-Decoding-Algorithmus ist aber in der Lage, auch deutlich größere Beispiele zu Lösen. Daher wurde die Aufgabe so erweitert, dass auch beispiele von 2-4-facher Größe gelöst werden sollen. Mit einem reinen Brute-Force-Ansatz sind derart große Beispiele dann nich mehr lösbar. Zusätzlich müssen größere Beispieldatein generiert werden.
-Hierfür wäre es denkbar, ähnlich wie im McElice-Kryptosystem einen linearen Code mit bestimmten minmalen Distanz zu generieren. So könnte man sich sicher sein, dass es nur die eine Menge an Karten gibt, die im exklusiven Oder null ergeben. Allerdings können auch einfach Zufällig generierte Karten verwendet werden, da es bei zufällig ausgewählten Vektoren äußerst unwahrscheinlich ist, dass es eine zweite Lösung gibt. Danach werden $k$ Karten ausgewählt und eine weitere Karte durch das exklusive Oder der $k$ Karten ausgetauscht.
+Beide Ansätze können die Beispiele von der BWINF-Website in angemessener Zeit lösen.
+Der Information-Set-Decoding-Algorithmus ist aber in der Lage, auch deutlich größere Beispiele zu lösen. Daher wurde die Aufgabe so erweitert, dass auch Beispiele von 2-4-facher Größe gelöst werden sollen. Mit einem Brute-Force-Ansatz sind derart große Beispiele dann nicht mehr lösbar. Zusätzlich müssen größere Beispieldatein generiert werden.
+Hierfür wäre es denkbar, ähnlich wie im McElice-Kryptosystem einen linearen Code mit bestimmten minmalen Distanz zu generieren. 
+So könnte man sich sicher sein, dass es nur die eine Menge an Karten gibt, die im exklusiven Oder null ergeben. 
+Allerdings können auch einfach zufällig generierte Karten verwendet werden, da es bei zufällig ausgewählten Vektoren mit ausreichend Bits äußerst unwahrscheinlich ist, dass es eine zweite Lösung gibt. 
+Danach werden $k$ Karten ausgewählt und eine weitere Karte durch das exklusive Oder der $k$ Karten ausgetauscht, die in der Aufgabenstellung beschrieben.
+
 \subsection{Teilaufgabe b)}
-Nachdem Zara die $k+1$ richtigen Karten gefunden hat, möchte sie Haus $h$ aufschließen. Zunächst sortiert sie die Karten. Dann probiert sie das Haus mit der $h$-ten Karte aufzuschließen. Funktioniert dies nicht, ist die hat die Sicherheitkarte einen Index $\leq h$. Dann kann sie mit der $h+1$-ten Karte das Haus aufschließen, da diese die $h$-te Karte wäre, wenn die Sicherheitskarte entfernt würde.
+Nachdem Zara die $k+1$ richtigen Karten gefunden hat, möchte sie Haus $h$ aufschließen. Zunächst sortiert sie die Karten. Dann probiert sie, das Haus mit der $h$-ten Karte aufzuschließen. Funktioniert dies nicht, hat die Sicherheitkarte einen Index $\leq h$. Dann kann sie mit der $h+1$-ten Karte das Haus aufschließen, da diese die $h$-te Karte wäre, wenn die Sicherheitskarte entfernt würde.
 \section{Umsetzung}
 Die Lösung wurde in \texttt{C++} implementiert. Die beiden Ansätze wurden in jeweils einer Klasse, \lstinline{ISDSolver} und \lstinline{BruteforceSolver} implementiert. Eine \lstinline{Utils}-Klasse enthält Methoden, die von beiden Algorithmen verwendet werden, beispielsweise eine Implementation des Gauß-Jordan-Algorithmus über $\mathbb{F}_2$.
-
+\subsection{Information-Set-Decoding}
 Zunächst wird die Implementation des Information-Set-Decoding Algorithmus von Lee und Brickell erläutert.
 Vor dem eigentlichen Algorithmus wird, wie bereits kurz erwähnt, einmal der Gauß-Jordan-Algorithmus auf der Matrix ausgeführt. 
 Das führt dazu, dass linear abhängige Zeilen entfernt werden und die Implementation vereinfacht wird, da die Matrix nun immer mindestens so viele Spalten wie Zeilen hat.
-Bei jedem Versuch wird eine zufällige Permutation für die Spalten über die \lstinline{std::shuffle} Methode der \texttt{C++}-Standardbibliothek generiert und die Matrix nach dieser Permutation kopiert. 
+Bei jedem Versuch wird eine zufällige Permutation für die Spalten über die \lstinline{std::shuffle} Methode der \texttt{C++}-Standardbibliothek generiert und die Matrix entsprechend dieser Permutation kopiert. 
 Danach wird der Gauß-Jordan-Algorithmus ausgeführt, die Pivots gesucht und deren Zeilen und Spalten gespeichert. 
 Hier wird der Gauß-Jordan-Algorithmus sehr häufig, nähmlich in jedem Versuch, ausgeführt und ist der Flaschenhals für die Laufzeit. 
 Daher wird eine effizientere Version des Algorithmus verwendet, die statt Vektoren aus der Standardbibliothek \lstinline{dynamic_bitset}s aus der Boost-Bibliothek verwendet.
 Außerdem wird das Entfernen von null-Zeilen ausgelassen, da bereits zu Beginn die linear abhängigen Zeilen entfernt wurden und statt \lstinline{std::swap} wird der XOR-Swap-Algorithmus verwendet, da die Speicherverwaltung für die temporäre Variable in \lstinline{std::swap} viel Zeit benötigt.
 
-Da $p=1$ verwendet wird, kann nun einfach über alle Spalten iteriert werden, in denen keine Pivots gefunden wurde und deren Hamming-Gewicht berechnet werden. 
-Hat die Spalte das richtige Gewicht, können über die gespeicherten Pivot-Positionen die notwendigen Bits gefunden werden, ohne wirklich das Syndrom mit dem Inversen der Submatrix $\mathbf{H}_I$ zu multiplizieren.
+Da $p=1$ verwendet wird, kann nun einfach über alle Spalten iteriert werden, in denen keine Pivots gefunden wurden und deren Hamming-Gewicht berechnet werden. 
+Hat die Spalte das richtige Gewicht, können über die gespeicherten Pivot-Positionen die notwendigen Bits in $e$ gefunden werden, ohne wirklich das Syndrom mit dem Inversen der Submatrix $\mathbf{H}_I$ zu multiplizieren.
 Schlussendlich wird die Permutation rückgängig gemacht und das Ergebnis ausgegeben. 
+
 Aufgrund seiner Struktur ist dieser Algorithmus sehr einfach zu parallelisieren: alle Kerne eines Prozessors können den Algorithmus unabhängig voneinader ausführen, bis ein Thread eine Lösung gefunden hat.
 Um dieses Potential auch auszuschöpfen wurde OpenMP verwendet, um die Hauptschleife mehrfach gleichzeitig auszuführen.
 
-Der Brute-Force-Algorithmus ist deutlich ineffizienter und musste stark optimiert werden, um alle Beispiele von der BwInf-Website in anehmbarer Zeit lösen zu können. 
-Dafür werden in der \lstinline{vorberechnen()} Funktion einige Dinge vorberechnet, sodass beim eigentlichen berechnen weniger in der Matrix gesucht werden muss. 
-Konkret wird vorberechnet, welche Spalten Pivotelemente haben, da die Werte für diese Spalten durch Resubstitution ermittelt werden können, statt 0 und 1 auszuprobieren. 
-Für die Berechnung ist außerdem wichtig, in welcher Spalte das jeweilige Pivotelement ist. 
+\subsection{Brute-Force-Ansatz}
+Der Brute-Force-Algorithmus ist im Allgemeinen ineffizienter und musste stark optimiert werden, um alle Beispiele von der BwInf-Website in anehmbarer Zeit lösen zu können. 
+Dafür werden in der \lstinline{vorberechnen()}-Funktion einige Dinge vorberechnet, sodass beim eigentlichen Lösen weniger in der Matrix gesucht werden muss. 
+Konkret wird abgespeichert, welche Spalten Pivotelemente haben, da die Werte für diese Spalten durch Resubstitution ermittelt werden können, statt 0 und 1 auszuprobieren. 
+Für die Berechnung ist außerdem wichtig, in welcher Zeile das jeweilige Pivotelement ist. 
 Daraufhin werden alle Indizes von Einsen in den Zeilen und Spalten vorberechnet, um effizient über diese Positionen iterieren zu können. 
-Zuletzt werden alle Zeilen und Spalten in \lstinline{std::bitset<>}s gespeichert, ebenfalls um effizienter mit ihnen Rechnen zu können.
+Zuletzt werden alle Zeilen und Spalten in \lstinline{std::bitset}s gespeichert, ebenfalls um effizienter mit ihnen rechnen zu können.
 Da \lstinline{std::bitset}s eine zur Compilezeit konstante Anzahl an Bits benötigen, braucht auch die \lstinline{BruteforceSolver}-Klasse einen zur Compilezeit konstanten Template-Parameter, der die Anzahl der Bits, mit der gerechnet werden soll, angibt.  
 Zur Laufzeit wird dann je nach Größe der Eingabedatei zwischen 256, 1024 und 8129 Bits ausgewählt. 
 Die \lstinline{dynamic_bitset}s aus der Boost-Bibliothek benötigen viel Laufzeit zur dynamischen Zuweisung ihres Speicherplatzes, weshalb es in diesem Fall effizienter ist, verschiedene Größen von statischen \lstinline{std::bitset}s zu verwenden.
-Das eigentliche Lösen wurde dann Rekursiv in der Methode \lstinline{resub} implementiert.
-Die Methode bekommt eine Spalte, ab der substituiert werden soll, das bisherige Codewort, die Anzahl der Einsen, die noch gesetzt werden können und das Syndrom, also die Summe der Spalten, die im aktuellen Codewort eine Eins haben. 
+Das eigentliche Lösen wurde dann rekursiv in der Methode \lstinline{resub} implementiert.
+Die Methode bekommt as Parameter eine Spalte, ab der substituiert werden soll, das bisherige Codewort, die Anzahl der Einsen, die noch gesetzt werden können und das Syndrom, also die Summe der Spalten, die im aktuellen Codewort eine Eins haben. 
 Die letzteren beiden Argumente könnten auch bei jedem Methodenaufruf neu berechent werden, werden aber aus Performancegründen übergeben. 
 Daraufhin wird solange resubstituiert, bis eine Spalte erreicht wird, die kein Pivot-Element enthält, wo also sowohl 0 als auch 1 möglich wären.
 Die Suche kann optimiert werden, indem abgebrochen wird, wenn es nicht mehr genug Spalten gibt, um das Zielgewicht zu erreichen oder das Zielgewicht bereits überschritten wurde. 
@@ -197,14 +206,14 @@ Schlussendlich wird nacheinander 0 und 1 für die freie Variable eingesetzt und 
 
 Da der Brute-Force-Ansatz mitunter sehr lange brauchen kann, ist es wichtig, dass der Benutzer Feedback über den Fortschritt bekommt. 
 Es gestaltet sich aber als durchaus schwierig, den aktuellen Fortschritt zu berechen. 
-Daher werden die effekte der beiden Abbruchbedingungen vernachlässigt. 
+Daher werden die Effekte der beiden Abbruchbedingungen vernachlässigt. 
 Dann kann aus dem aktuellen Codewort der Fortschritt ermittelt werden.
-In der Praxis ist dieser Fortschritt am Anfang des Algorithmus zu pessimistisch, reicht aber aus, um den Nutzer eine grobe Idee zu geben, wie lange der Algorithmus noch brauchen wird. 
-Da der Algorithmus bricht ab, wenn er eine Lösung gefunden hat, der Fortschritt bezieht sich jedoch auf die Zeit, die benötigt wird, um alle Möglichkeiten auszuprobieren. 
+In der Praxis ist dieser Fortschritt am Anfang zu pessimistisch, reicht aber aus, um den Nutzer eine grobe Idee zu geben, wie lange der Algorithmus noch brauchen wird. 
+Außerdem bricht der Algorithmus ab, wenn er eine Lösung gefunden hat, der Fortschritt bezieht sich jedoch auf die Zeit, die benötigt wird, um alle Möglichkeiten auszuprobieren. 
 Das heißt, dass der Algorithmus meist schneller terminiert, als man es nach dem Fortschritt erwarten würde -- dies zu verhindern würde aber keinen Sinn ergeben, da der Algorithmus natürlich noch nicht weiß, wann er eine Lösung finden wird. 
 Der Code zum Ausgeben des Fortschrittes ist in \lstinline{printProgress()} zu finden.
 
-Zum Compilieren des Codes wird ein \texttt{C++-14}-fähiger Compiler benötigt, der zusätzlich OpenMP unterstützt.
+Zum Compilieren des Codes wird ein \lstinline{C++-14}-fähiger Compiler benötigt, der zusätzlich OpenMP unterstützt.
 Als Build-System wird CMake verwendet. 
 Der Code kann wie üblich über 
 \begin{lstlisting}[language=bash]
@@ -213,7 +222,7 @@ Der Code kann wie üblich über
     cmake ..
     cmake --build . 
 \end{lstlisting}    
-kompiliert und dann mit \lstinline[language=bash]{./stapel [algorithmus] [Pfad]} ausgeführt werden, wobei zwischen den Algorithmen \lstinline{isd} für Information-Set-Decding und \lstinline{bruteforce} für den Bruteforce-Ansatz ausgewählt werden kann. Der Pfad sollte auf die zu lösende Eingabedatei zeigen. Der Code wurde unter Ubuntu 20.04. getestet.
+kompiliert und dann mit \lstinline[language=bash]{./stapel [Algorithmus] [Pfad]} ausgeführt werden, wobei zwischen den Algorithmen \lstinline{isd} für Information-Set-Decding und \lstinline{bruteforce} für den Brute-Force-Ansatz ausgewählt werden kann. Der Pfad sollte auf die zu lösende Eingabedatei zeigen. Der Code wurde unter Ubuntu 20.04. getestet.
 
 Der Beispielgenerator wurde in Python implementiert und kann unter Linux oder MacOS über \lstinline[language=bash]{python3 beispielgenerator.py} ausgeführt werden.
 \section{Beispiele}
@@ -222,7 +231,7 @@ Zunächst folgen die Beispiele von der BWINF-Website.
 Zunächst die Ausgabe des Information-Set-Decoding-Algorithmus: 
 \lstinputlisting{Ausgaben/stapel0_isd.txt}
 Und die Ausgabe des Bruteforce-Algorithmus:
-\lstinputlisting{Ausgaben/stapel0_isd.txt}
+\lstinputlisting{Ausgaben/stapel0_bruteforce.txt}
 Beide Algorithmen lösen dieses Beispiel also korrekt und in sehr kurzer Laufzeit.
 \subsection*{stapel1.txt}
 Auch für dieses Beispiel kommt der ISD-Algorithmus zur richtigen Lösung:
@@ -231,7 +240,7 @@ Der Bruteforce-Algorithmus kommt zum gleichen Ergebnis und benötigt dafür weni
 \subsection*{stapel2.txt}
 Die Ausgabe ist auch für das dritte Beispiel korrekt:
 \lstinputlisting{Ausgaben/stapel2_isd.txt}
-Bei den größeren Beispielen werden nicht alle Bits der Karten angezeigt, da diese nichtmehr in ein Terminalfenster passen würden. Die restlichen Bits können über die 0-indexierten Kartennummern aus der Eingabedatei entnommen werden. Ohnehin ist Zara vermutlich eher an den Kartennummern interressiert. 
+Bei den größeren Beispielen werden nicht alle Bits der Karten angezeigt, da diese nicht mehr in ein Terminalfenster passen würden. Die restlichen Bits können über die 0-indexierten Kartennummern aus der Eingabedatei entnommen werden. Ohnehin ist Zara vermutlich eher an den Kartennummern interressiert. 
 
 Auch dieses Beipspiel löst der Brute-Force-Algorithmus korrekt in unter einer Millisekunde. Bei den ersten drei Beispielen zeigt sich, dass in manchen Fällen auch der Brute-Force-Algorithmus schneller sein kann. Das ist immer dann der Fall, wenn die Karten viele Bits haben, es aber nur wenig Karten gibt. Dann ist das Gleichungssystem nahezu vollständig bestimmt und der Brute-Force-Algorithmus muss kaum noch Werte ausprobieren. 
 \subsection*{stapel3.txt}
@@ -240,28 +249,28 @@ Die Ausgabe des ISD-Algorithmus:
 Dieses Beispiel hat der Brute-Force-Algorithmus ebenfalls in 8 Millisekunden mit gleichen Lösung gelöst.
 Hier muss der Brute-Force-Algorithmus bereits mehrere Stellen ausprobieren, da es mehr Karten als Bits gibt.
 \subsection*{stapel4.txt}
-Dieses Beispiel wird von ISD-Algorithmus ebenfalls in sehr kurzer Zeit gelöst:
+Dieses Beispiel wird vom ISD-Algorithmus ebenfalls in sehr kurzer Zeit gelöst:
 \lstinputlisting{Ausgaben/stapel4_isd.txt}
-In diesem Fall hat der Algorithmus 10 Versuche gebraucht, bis eine Lösung gefunden wurde. Nach der theoretischen Analyse unter \ref{sec:runtime} beträgt der Erwartungswert für die Anzahl der Versuche bei diesem Beispiel 10. Zumindest in der Größenordnung stimmt die Analyse also mit der Praxis überein. 
+In diesem Fall hat der Algorithmus 13 Versuche gebraucht, bis eine Lösung gefunden wurde. Nach der theoretischen Analyse unter \ref{sec:runtime} beträgt der Erwartungswert für die Anzahl der Versuche bei diesem Beispiel 10. Zumindest in der Größenordnung stimmt die Analyse also mit der Praxis überein. 
 Die Ausgabe des Brute-Force-Algorithmus ist
 \lstinputlisting{Ausgaben/stapel4_bruteforce.txt}
 Hier benötigt der Brute-Force-Algorithmus bereits deutlich länger, kommt aber dennoch zum gleichen Ergebnis. 
-\section{stapel5.txt}
+\subsection*{stapel5.txt}
 Die Ausgabe des ISD-Algorithmus:
-\lstinputlisting{Ausgaben/stapel5_isd.txt}.
-Für dieses Beipiel benötigt der Brute-Force-Algorithmus bereits 3:45. Damit kommt der Algorithmus hier klar an seine Grenzen. Die Zeit ist nur dadurch noch relativ gering, dass die erste Karte die Nummer 70 ist und der Algorithmus relativ früh abbrechen kann. Ohne Abbrechen nach einer Lösung würde der Algorithmus hier bereits mehrere Stunden benötigen.
-Mit immernoch unter 10ms Laufzeit zeigt sich hier die effizienz des Information-Set-Decoding.
+\lstinputlisting{Ausgaben/stapel5_isd.txt}
+Für dieses Beipiel benötigt der Brute-Force-Algorithmus bereits 3:45 Minuten. Damit kommt der Algorithmus hier klar an seine Grenzen. Die Zeit ist nur dadurch noch relativ gering, dass die erste Karte die Nummer 70 ist und der Algorithmus relativ früh abbrechen kann. Ohne Abbrechen nach einer Lösung würde der Algorithmus hier bereits mehrere Stunden benötigen.
+Mit immernoch unter 10ms Laufzeit zeigt sich hier die Effizienz des Information-Set-Decoding.
 \subsection{Größere Beispiele}
 Auf die folgenden, deutlich größeren, Beispiele wird nur der ISD-Algorithmus angewendet, da der Brute-Force-Algorithmus nicht in angemessener Zeit terminieren würde.
 
-Das Beispiel \texttt{stapelc0.txt} wurde mit dem \texttt{beispielgenerator.py}-Skript generiert und hat 1000 Karten, die jeweils 500 Bits enthalten. Davon sind 14 Karten Öffnungskarten. Damit ist das Beispiel etwa 5-Mal so groß wie \texttt{stapel5.txt}. Der Suchraum wurde um einen Faktor in der Größenordnung von $2^800$ vergrößert. Dennoch ist der Algorithmus in der Lage, in sehr kurzer Zeit eine Lösung zu finden.
+Das Beispiel \lstinline{stapelc0.txt} wurde mit dem \lstinline{beispielgenerator.py}-Skript generiert und hat 1000 Karten, die jeweils 500 Bits enthalten. Davon sind 14 Karten Öffnungskarten. Damit ist das Beispiel etwa 5-Mal so groß wie \lstinline{stapel5.txt}. Der Suchraum wurde gegenüber \lstinline{stapel5.txt} um einen Faktor in der Größenordnung von $2^{800}$ vergrößert. Dennoch ist der Algorithmus in der Lage, in sehr kurzer Zeit eine Lösung zu finden.
 \lstinputlisting{Ausgaben/stapelc0_isd.txt}
 Der Beispielgenerator gibt zusätzlich zur Eingabedatei die verwendeten Öffnungskarten aus und die Ausgabe stimmt damit überein. 
 Der theoretisch ermittelte Erwartungswert für die Anzahl der Versuche ist bei diesem Beispiel etwa 2300, sodass die Größenordnung auch hier mit der Theorie übereinstimmt. Die tatsächlich benötigte Anzahl an Versuchen schwankt jedoch -- wie zu erwarten -- stark.
 
-Dieses Beispiel zeigt aber die Grenzen des Verfahrens auf: noch größere Instanzen währen aufgrund der immernoch exponentiellen Laufzeit nicht mehr lösbar. Etwas größere Beispiele könnten gelöst werden, wenn größere Werte für $p$ oder einer der weiterentwickelten Algorithmen verwendet würde.
+Dieses Beispiel zeigt aber auch die Grenzen des Verfahrens auf: noch deutlich größere Instanzen wären aufgrund der exponentiellen Laufzeit nicht mehr lösbar. Etwas größere Beispiele könnten gelöst werden, wenn größere Werte für $p$ oder einer der weiterentwickelten Algorithmen verwendet würde.
 Noch größere Instanzen dieses Problems werden aktuell als so schwierig angesehen, dass sie als Grundlage für kryptographische Verfahren verwendet werden. \citeauthor{bernsteinAttackingDefendingMcEliece2008} empfehlen beispielsweise zugrundeliegende Codes, die in diesem Kontext 1632 Karten mit 1269 Bits und 33 Öffungskarten entsprechen würden, um ein McElice-Kryptosystem mit einem Sicherheitsniveau von 80-Bits zu erhalten. \cite{bernsteinAttackingDefendingMcEliece2008}
-Der Algorithmus schneided also schon vergleichsweise gut ab, wenn es auch noch Verbesserungspotential gibt.
+Der Algorithmus schneidet also schon vergleichsweise gut ab, auch wenn es noch Verbesserungspotential gibt.
 \section{Quellcode}
 
 
