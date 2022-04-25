@@ -33,6 +33,13 @@ class BruteforceSolver {
 
     int K;
 
+public:
+    /*
+     * Gibt an, ob Fortschrittsnachrichten ausgegeben werden sollen
+     */
+    bool progressMessages = true;
+
+private:
     /*
      * Alle Variablen < col werden rekursiv resubstituiert
      */
@@ -97,6 +104,8 @@ class BruteforceSolver {
     }
 
     void printProgress(bitset<size> codeword) {
+        if(!progressMessages)
+            return;
         // maximal einmal pro Sekunde ausgeben
         if (chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - fortschritt_zeit).count() >=
             3000) {

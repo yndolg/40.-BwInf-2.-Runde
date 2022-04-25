@@ -9,18 +9,20 @@
 \begin{document}
 
 \maketitle
-
-Ich möchte an dieser Stelle einige Anmerkungen zur Programmierumgebung machen. Ich habe Aufgabe 3 (Hexmax) und die Bonusaufgabe (Zara Zackigs Zurückkehr) bearbeitet. 
-Die Implementierung von Aufgabe benötigt einen \texttt{C++-17}-fähigen Compiler. 
+Ich habe Aufgabe 3 (Hexmax) und die Bonusaufgabe (Zara Zackigs Zurückkehr) bearbeitet. 
+An dieser Stelle möchte ich noch einige Anmerkungen zur Programmierumgebung machen. 
+Beide Aufgaben wurden mit \texttt{C++} gelöst.
+Die Implementierung von Aufgabe 3 benötigt einen \texttt{C++-17}-fähigen Compiler. 
 Für die Bonusaufgabe wird ein \texttt{C++-14}-fähiger Compiler benötigt. Hier wird außerdem wird die Boost-Bibliothek und OpenMP verwendet.
-Beide Aufgaben verwenden das CMake-Buildsystem und können über 
-\begin{lstlisting}[language=bash,]
+Beide Lösungen verwenden das CMake-Buildsystem und können über 
+\begin{lstlisting}[language=bash]
 cmake -S . -B build -D CMAKE_BUILD_TYPE=Release
 cmake --build build
 \end{lstlisting}
-kompiliert werden. Die Skripte zur Generierung von größeren Beispielen wurden mit Python 3 geschrieben.
+kompiliert werden. Die Skripte zur Generierung von größeren Beispielen wurden mit Python 3 geschrieben und sind unter GNU/Linux und macOS ausführbar.
 Der Code wurde unter Ubuntu 20.04 getestet. 
-Die Laufzeitmessungen beziehen sich auf einen Intel® Core™ i7-2600 Prozessor.
- 
+In den Implementierungsordnern befindet sich jeweils eine fertig kompilierte ELF-64-Binary für GNU/Linux. 
+
+Die Laufzeitmessungen beziehen sich auf einen Intel® Core™ i7-2600 Prozessor (4 Kerne, \SI{3.4}{\giga\hertz}).
 
 \end{document}

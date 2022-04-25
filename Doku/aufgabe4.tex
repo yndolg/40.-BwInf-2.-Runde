@@ -220,7 +220,11 @@ Der Code kann wie üblich über
 cmake -S . -B build -D CMAKE_BUILD_TYPE=Release
 cmake --build build
 \end{lstlisting}
-kompiliert und dann mit \lstinline[language=bash]{./stapel [Algorithmus] [Pfad]} ausgeführt werden, wobei zwischen den Algorithmen \lstinline{isd} für Information-Set-Decoding und \lstinline{bruteforce} für den Brute-Force-Ansatz ausgewählt werden kann. Der Pfad sollte auf die zu lösende Eingabedatei zeigen. 
+kompiliert und dann mit \lstinline[language=bash]{./stapel [-full] [Algorithmus] [Pfad]} ausgeführt werden, wobei zwischen den Algorithmen \lstinline{isd} für Information-Set-Decoding und \lstinline{bruteforce} für den Brute-Force-Ansatz ausgewählt werden kann. Der Pfad sollte auf die zu lösende Eingabedatei zeigen. 
+
+Das Programm hat zwei mögliche Ausgabeformate: Standardmäßig wird eine Ausgabe verwendet, die gut für Menschen zu verstehen ist. Zara ist vermutlich eher an den (0-indexierten) Kartennummern als an den einzelnen Bits der Karten interessiert, da sie so die richtigen Karten einfach aus dem Stapel heraussuchen kann. Deshalb werden in diesem Modus die Kartennummern, aber nicht alle Bits der Karten ausgegeben. Außerdem werden Zara Informationen zum verwendeten Algorithmus und der Laufzeit gegeben.
+
+Auf der BWINF-Website ist allerdings gefordert, in den Ergebnisdateien alle Bits der Ergebniskarten mit einer Karte pro Zeile auszugeben. Zara könnte dieses Format z.B. verwenden, um die Lösung mit einem weiteren Programm zu überprüfen. Aktivierbar ist es mit dem \lstinline{-full}-Parameter. In der Zip-Datei finden sich beide Ausgabeformate. Da beide Algorithmen bei allen Beispielen das gleiche Endergebnis liefern, ist die \lstinline{-full}-Ausgabe nur einmal pro Beispieldatei enthalten. Das menschenlesbare Format ist für beide Algorithmen enthalten, da sich die Zusatzinformationen je nach Algorithmus unterscheiden.
 
 Der Beispielgenerator wurde in Python implementiert und kann unter Linux oder MacOS über \lstinline[language=bash]{python3 beispielgenerator.py} ausgeführt werden.
 \section{Beispiele}
@@ -237,7 +241,6 @@ Der Brute-Force-Algorithmus kommt zum gleichen Ergebnis und benötigt dafür wen
 \subsection*{stapel2.txt}
 Die Ausgabe ist auch für das dritte Beispiel korrekt:
 \lstinputlisting{Ausgaben/stapel2_isd.txt}
-Bei den größeren Beispielen werden nicht alle Bits der Karten angezeigt, da diese nicht mehr in ein Terminalfenster passen würden. Die restlichen Bits können über die 0-indexierten Kartennummern aus der Eingabedatei entnommen werden. Ohnehin ist Zara vermutlich eher an den Kartennummern interessiert. 
 
 Auch dieses Beispiel löst der Brute-Force-Algorithmus korrekt in unter einer Millisekunde. Bei den ersten drei Beispielen zeigt sich, dass in manchen Fällen auch der Brute-Force-Algorithmus schneller sein kann. Das ist immer dann der Fall, wenn die Karten viele Bits haben, es aber nur wenig Karten gibt. Dann ist das Gleichungssystem nahezu vollständig bestimmt und der Brute-Force-Algorithmus muss kaum noch Werte ausprobieren. 
 \subsection*{stapel3.txt}

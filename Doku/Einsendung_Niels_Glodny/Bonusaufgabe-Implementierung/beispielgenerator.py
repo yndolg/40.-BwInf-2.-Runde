@@ -6,7 +6,7 @@ if __name__ == "__main__":
     k = int(input("Wie viele sind davon Öffnungskarten? "))
     m = int(input("Wie viele Bits hat jede Karte? "))
 
-    path = input("In welchen Ordner soll das Beispiel gespeichert werden? [leerlassen für './Eingabe']")
+    path = input("In welchen Ordner soll das Beispiel gespeichert werden? [leerlassen für '../Eingabe']")
     if len(path) == 0:
         path = "Eingabe"
 

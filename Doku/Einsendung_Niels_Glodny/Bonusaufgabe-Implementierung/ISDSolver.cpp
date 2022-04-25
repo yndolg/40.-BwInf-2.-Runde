@@ -96,7 +96,7 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
             // Pivots finden, um leicht das Inverse der Teilmatrix zu bilden
             m_i.clear();
             k_i.clear();
-            pivots.clear();
+            pivots.reset();
             for (int row = 0; row < n_rows; row++) {
                 auto col = H_perm[row].find_first();
                 pivots.set(col);
