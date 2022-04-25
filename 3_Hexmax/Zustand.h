@@ -1,7 +1,3 @@
-//
-// Created by niels on 06.03.22.
-//
-
 #ifndef INC_3_HEXMAX_STATE_H
 #define INC_3_HEXMAX_STATE_H
 

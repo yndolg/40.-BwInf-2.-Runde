@@ -1,10 +1,5 @@
-//
-// Created by niels on 18.04.22.
-//
-
 #ifndef HEXMAX_TSPSOLVER_H
 #define HEXMAX_TSPSOLVER_H
-
 
 #include <string>
 #include <vector>

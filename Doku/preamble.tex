@@ -60,8 +60,10 @@
   showtabs=false, 
   stepnumber=2, tabsize=2, title=\lstname,
   breaklines=true,
-  breakatwhitespace=false
-}
+  breakatwhitespace=false,
+  language=C++
+} 
+
 \lstset{literate=%
     {Ö}{{\"O}}1
     {Ä}{{\"A}}1
@@ -108,11 +110,14 @@
 \usepackage{cleveref}
 
 \floatname{algorithm}{Algorithmus}
-\usepackage{microtype}
-\usepackage{siunitx}
+\usepackage[final]{microtype}
+\usepackage[binary-units]{siunitx}
 % Daten für die Titelseite
 \title{\textbf{\Huge\Aufgabe}}
 \author{\LARGE Teilnahme-ID: \LARGE \TeilnahmeId \\\\
 	    \LARGE Bearbeiter/-in dieser Aufgabe: \\ 
 	    \LARGE \Name\\\\}
 \date{\LARGE\today}
+
+%\usepackage{setspace}
+%\doublespacing

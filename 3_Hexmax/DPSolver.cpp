@@ -1,7 +1,3 @@
-//
-// Created by niels on 08.03.22.
-//
-
 #include "DPSolver.h"
 #include "Zustand.h"
 

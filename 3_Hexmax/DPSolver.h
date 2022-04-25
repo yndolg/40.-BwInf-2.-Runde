@@ -1,7 +1,3 @@
-//
-// Created by niels on 08.03.22.
-//
-
 #ifndef INC_3_HEXMAX_DPSOLVER_H
 #define INC_3_HEXMAX_DPSOLVER_H
 

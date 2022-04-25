@@ -1,20 +1,15 @@
-//
-// Created by niels on 11.04.22.
-//
-
 #include <algorithm>
-#include <iostream>
+
 #include "ISDSolver.h"
 
 using namespace std;
-
 
 /*
  * Effizientere Variante des Gauss-Verfahrens, die Bitsets verwendet.
  * Im ISD-Algorithmus wird die Laufzeit vom Gauss-Algorithmus dominiert,
  * sodass die Optimierungen lohnenswert sind.
  */
-void ISDSolver::efficientGauss(std::vector<boost::dynamic_bitset<>> &bit_mat) { // Theta(n^2m)
+void ISDSolver::efficientGauss(std::vector<boost::dynamic_bitset<>> &bit_mat) {
     int h = 0;
     int k = 0;
     while (h < bit_mat.size() && k < bit_mat[0].size()) {
@@ -25,8 +20,8 @@ void ISDSolver::efficientGauss(std::vector<boost::dynamic_bitset<>> &bit_mat) { 
         if (i_max == bit_mat.size()) {
             k++;
         } else {
-            // XOR-Swap-Algorithmus, std::swap wäre durch die Speicherverwaltung der
-            // temporären Variable ein Flaschenhals
+            // XOR-Swap-Algorithmus, std::swap wäre durch die Speicherverwaltung
+            // der temporären Variable ein Flaschenhals
             if (h != i_max) {
                 bit_mat[h] ^= bit_mat[i_max];
                 bit_mat[i_max] ^= bit_mat[h];
@@ -57,9 +52,9 @@ void ISDSolver::efficientGauss(std::vector<boost::dynamic_bitset<>> &bit_mat) { 
 
 std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
 
-    // Einmal Gauss-Jordan-Algorithmus anpassen. Dadurch werden linear abhängige
-    // Zeilen aus der Matrix entfernt, sodass sich die Anzahl der Zeilen nochmal
-    // ändert.
+    // Einmal Gauss-Jordan-Algorithmus anpassen. Dadurch werden linear
+    // abhängige Zeilen aus der Matrix entfernt, sodass sich die Anzahl der
+    // Zeilen nochmal ändert.
     Utils::gauss(instance.H);
 
     auto n_cols = instance.H[0].size();
@@ -84,7 +79,7 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
         k_i.reserve(n_rows);
 
         while (return_value.empty()) {
-            #pragma omp critical
+#pragma omp critical
             versuche += 1;
 
             // die Spalten von H permutieren und in H_perm abspeichern
@@ -109,11 +104,13 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
                 k_i.push_back(row);
             }
 
-            // p wird auf 1 festgelegt. Folglich kann einfach über die Spalten iteriert werden.
-            // Dadurch wird über alle p-großen Teilmengen iteriert
+            // p wird auf 1 festgelegt. Folglich kann einfach über die Spalten
+            // iteriert werden. Dadurch wird über alle p-großen Teilmengen
+            // iteriert
             int p = 1;
             for (int s = 0; s < n_cols; s++) {
-                // Nur über die Spalten iterieren, die nicht in der invertierbaren Submatrix sind
+                // Nur über die Spalten iterieren, die nicht in der
+                // invertierbaren Submatrix sind
                 if (pivots.test(s))
                     continue;
 
@@ -124,17 +121,17 @@ std::vector<std::vector<int>> ISDSolver::solve(Utils::Instance instance) {
 
                 // Hamming-Gewicht bestimmen
                 int w = 0;
-                for (int bit: syndrom) 
+                for (int bit: syndrom)
                     w += bit;
-                
+
                 if (w == t - p) {
                     vector<int> solution(n_cols, 0);
 
                     // Die ausgewählte Spalte wird verwendet
                     solution[s] = 1;
 
-                    // Berechnen, welche Spalten aus der invertierbaren Submatrix
-                    // ebenfalls verwendet werden müssen
+                    // Berechnen, welche Spalten aus der invertierbaren
+                    // Submatrix ebenfalls verwendet werden müssen
                     for (int i = 0; i < n_rows; i++) {
                         if (syndrom[k_i[i]] == 1) {
                             solution[m_i[i]] = 1;

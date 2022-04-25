@@ -21,12 +21,12 @@ Das Problem besteht nun daraus, eine Kombination von $t = k + 1$ Spalten aus $\m
     x \mathbf{H} = \mathbf{0} && \text{und} && wt(x) = t
 \end{align*}
 gilt. $wt(x)$ bezeichnet dabei das Hamming-Gewicht des Vektors, also die Anzahl der von null verschiedenen Stellen. 
-Dieses Problem wird als \textit{Minimales-Codewort-Problem} (eng. minimum codeword problem) bezeichnet und wurde bereits eingehend untersucht, unter anderem, da es eine zentrale Rolle für die Sicherheit des McElice-Kryptosystems spielt. 
+Dieses Problem wird als \textit{Minimales-Codewort-Problem} (eng. minimum codeword problem) bezeichnet und wurde bereits eingehend untersucht, unter anderem, da es eine zentrale Rolle für die Sicherheit des McEliece-Kryptosystems spielt. 
 
 In diesem Kontext wird $\mathbf{H}$ als Kontrollmatrix (eng. parity check matrix) bezeichnet.
 Alle Vektoren $x \in \mathbb{F}^m_2$ für die $x \mathbf{H} = \mathbf{0}$ gilt,  werden als Codewörter bezeichnet und bilden zusammen einen linearen Blockcode. Das Produkt eines beliebigen Vektors $z \in \mathbb{F}^m_2$ mit $\mathbf{H}$ wird als Syndrom von $z$ bezeichnet. Ein Codewort ist also ein Vektor, dessen Syndrom der Nullvektor ist. 
 
-Berlekamp, McElice und Tilborg \cite{berlekampInherentIntractabilityCertain1978} haben gezeigt, dass dieses Problem zur Klasse der NP-vollständigen Probleme gehört, indem sie das 3-dimensionale Matchingproblem darauf reduziert haben, welches wiederum eins von Karps 21 NP-vollständigen Problemen ist.
+Berlekamp, McEliece und Tilborg \cite{berlekampInherentIntractabilityCertain1978} haben gezeigt, dass dieses Problem zur Klasse der NP-vollständigen Probleme gehört, indem sie das 3-dimensionale Matchingproblem darauf reduziert haben, welches wiederum eins von Karps 21 NP-vollständigen Problemen ist.
 Folglich gilt es als sehr unwahrscheinlich, dass es einen Algorithmus gibt, der das Problem in polynomieller Laufzeit löst. 
 Im Folgenden sind zwei mögliche Lösungsansätze dargestellt. 
 Der zweite ist ein Brute-Force-Ansatz, bei dem das Problem zunächst mithilfe von linearer Algebra vereinfacht und dann durch Ausprobieren aller restlichen Möglichkeiten gelöst wird.
@@ -138,7 +138,7 @@ Der Erwartungswert für die Laufzeit liegt damit bei
     E(T) &= \frac{\binom{n}{t}}{\binom{n-m}{p} \cdot \binom{m}{t-p}} \cdot \left(\Theta(n^2m) + \binom{n-m}{p}\cdot \Theta(pm)\right) \\
 \end{align*}
 
-Die Speicherkomplexität beträgt $\Theta(nm)$, da die $m \times n$-Matrix einmal kopiert werden muss, um die Permutation anzuwenden. Theoretisch wäre diese Kopie durch ein effizienteres Verfahren zur Anwendung der Permutation vermeidbar, der Speicherbedarf wird aber vermutlich keine Einschränkung für den Algorithmus darstellen, da die Laufzeiten bei derartig großen Instanzen nicht mehr vertretbar wäre. 
+Die Speicherkomplexität beträgt $\Theta(nm)$, da die $m \times n$-Matrix einmal kopiert werden muss, um die Permutation anzuwenden. Theoretisch wäre diese Kopie durch ein effizienteres Verfahren zur Anwendung der Permutation vermeidbar, der Speicherbedarf wird aber vermutlich keine Einschränkung für den Algorithmus darstellen, da die Laufzeiten bei derartig großen Instanzen nicht mehr vertretbar wären. 
 Neben der Kopie der Matrix werden die Permutation und die Positionen der Pivots des Gauß-Algorithmus gespeichert, was zusätzlich $\Theta(n)$ Speichereinheiten benötigt. 
 
 \subsection{Lösungsansatz 2: Brute-Force}
@@ -149,19 +149,19 @@ Hat das so gefundene Wort die richtige Anzahl an Einsen, wird es als Lösung aus
 Das Verfahren kann unter anderem dadurch etwas beschleunigt werden, dass abgebrochen wird, wenn bereits die maximale Anzahl an Einsen verwendet wurde oder es nicht mehr genug Variablen gibt, um die nötige Anzahl an Einsen zu erreichen. 
 
 Es folgt eine grobe Abschätzung der Laufzeit dieses Verfahrens.
-Die Anzahl der freien Variable, für die also per Backtracking potenziell beide Möglichkeiten ausprobiert werden müssen, ist $n-m$. Pro rekursivem Aufruf wird im Worstcase $O(nm)$ Zeit für die Substitution verwendet. Zusammen mit dem Gauß-Verfahren, das zuvor ausgeführt wird, um zur Stufenform zu gelangen, ergibt sich eine Laufzeit von 
+Die Anzahl der freien Variable, für die also per Backtracking potenziell beide Möglichkeiten ausprobiert werden müssen, ist $n-m$. Pro rekursivem Aufruf wird im worst case $O(nm)$ Zeit für die Substitution verwendet. Zusammen mit dem Gauß-Verfahren, das zuvor ausgeführt wird, um zur Stufenform zu gelangen, ergibt sich eine Laufzeit von 
 \begin{align*}
     T(n,m) = \Theta(n^2m) + O(2^{n-m}).
 \end{align*}
 Das ist bei Instanzen, bei denen $n$ und $m$ relativ nah beieinander liegen bereits deutlich besser als ein reines Brute-Force, bei dem alle Kombinationen von Karten ausprobiert werden würden, was eine Laufzeit von $O(2^n)$ benötigen würde.
 Die Laufzeit ist dennoch in der Praxis meist deutlich langsamer als die des Information-Set-Decoding.  
 Das Verfahren hat aber den Vorteil, dass es vollständig deterministisch ist und es auch mit Sicherheit bestätigen kann, dass es keine Lösung gibt, wenn das der Fall ist. 
-Wenn $n$ und $m$ in etwa gleich groß sind, kann dieses Verfahren aufgrund des dann relativ keinen Exponenten effizienter als ISD sein.
+Wenn $n$ und $m$ in etwa gleich groß sind, kann dieses Verfahren aufgrund des dann relativ kleinen Exponenten effizienter als ISD sein.
 
 \subsection{Erweiterung: Generierung von größeren Beispielen}
 Beide Ansätze können die Beispiele von der BWINF-Website in angemessener Zeit lösen.
 Der ISD-Algorithmus ist aber in der Lage, auch deutlich größere Beispiele zu lösen. Daher wurde die Aufgabe so erweitert, dass auch Beispiele von 2-4-facher Größe gelöst werden sollen. Mit einem Brute-Force-Ansatz sind derart große Beispiele dann nicht mehr lösbar. Zusätzlich müssen größere Beispieldateien generiert werden.
-Hierfür wäre es denkbar, ähnlich wie im McElice-Kryptosystem einen linearen Code mit bestimmten minimalen Distanz zu generieren. 
+Hierfür wäre es denkbar, ähnlich wie im McEliece-Kryptosystem einen linearen Code mit bestimmten minimalen Distanz zu generieren. 
 So könnte man sich sicher sein, dass es nur die eine Menge an Karten gibt, die im exklusiven Oder null ergeben. 
 Allerdings können auch einfach zufällig generierte Karten verwendet werden, da es bei zufällig ausgewählten Vektoren mit ausreichend Bits äußerst unwahrscheinlich ist, dass es eine zweite Lösung gibt. 
 Danach werden $k$ Karten ausgewählt und eine weitere Karte durch das exklusive Oder der $k$ Karten ausgetauscht, die in der Aufgabenstellung beschrieben.
@@ -176,7 +176,7 @@ Vor dem eigentlichen Algorithmus wird, wie bereits kurz erwähnt, einmal der Gau
 Das führt dazu, dass linear abhängige Zeilen entfernt werden und die Implementation vereinfacht wird, da die Matrix nun immer mindestens so viele Spalten wie Zeilen hat.
 Bei jedem Versuch wird eine zufällige Permutation für die Spalten über die \lstinline{std::shuffle} Methode der \texttt{C++}-Standardbibliothek generiert und die Matrix entsprechend dieser Permutation kopiert. 
 Danach wird der Gauß-Jordan-Algorithmus ausgeführt, die Pivots gesucht und deren Zeilen und Spalten gespeichert. 
-Hier wird der Gauß-Jordan-Algorithmus sehr häufig, nämlich in jedem Versuch, ausgeführt und ist der Flaschenhals für die Laufzeit. 
+Hier wird der Gauß-Jordan-Algorithmus sehr häufig, nämlich in jedem Versuch, ausgeführt und ist damit der Flaschenhals für die Laufzeit. 
 Daher wird eine effizientere Version des Algorithmus verwendet, die statt Vektoren aus der Standardbibliothek \lstinline{dynamic_bitset}s aus der Boost-Bibliothek verwendet.
 Außerdem wird das Entfernen von null-Zeilen ausgelassen, da bereits zu Beginn die linear abhängigen Zeilen entfernt wurden und statt \lstinline{std::swap} wird der XOR-Swap-Algorithmus verwendet, da die Speicherverwaltung für die temporäre Variable in \lstinline{std::swap} viel Zeit benötigt.
 
@@ -217,17 +217,13 @@ Zum Compilieren des Codes wird ein \lstinline{C++-14}-fähiger Compiler benötig
 Als Build-System wird CMake verwendet. 
 Der Code kann wie üblich über 
 \begin{lstlisting}[language=bash]
-    mkdir build
-    cd build
-    cmake ..
-    cmake --build . 
-\end{lstlisting}    
+cmake -S . -B build -D CMAKE_BUILD_TYPE=Release
+cmake --build build
+\end{lstlisting}
 kompiliert und dann mit \lstinline[language=bash]{./stapel [Algorithmus] [Pfad]} ausgeführt werden, wobei zwischen den Algorithmen \lstinline{isd} für Information-Set-Decoding und \lstinline{bruteforce} für den Brute-Force-Ansatz ausgewählt werden kann. Der Pfad sollte auf die zu lösende Eingabedatei zeigen. 
-Der Code wurde unter Ubuntu 20.04. getestet.
 
 Der Beispielgenerator wurde in Python implementiert und kann unter Linux oder MacOS über \lstinline[language=bash]{python3 beispielgenerator.py} ausgeführt werden.
 \section{Beispiele}
-Zunächst folgen die Beispiele von der BWINF-Website.
 \subsection*{stapel0.txt}
 Zunächst die Ausgabe des Information-Set-Decoding-Algorithmus: 
 \lstinputlisting{Ausgaben/stapel0_isd.txt}
@@ -247,10 +243,10 @@ Auch dieses Beispiel löst der Brute-Force-Algorithmus korrekt in unter einer Mi
 \subsection*{stapel3.txt}
 Die Ausgabe des ISD-Algorithmus:
 \lstinputlisting{Ausgaben/stapel3_isd.txt}
-Dieses Beispiel hat der Brute-Force-Algorithmus ebenfalls in 8 Millisekunden mit gleichen Lösung gelöst.
+Dieses Beispiel hat der Brute-Force-Algorithmus ebenfalls in 8 Millisekunden mit der gleichen Lösung gelöst.
 Hier muss der Brute-Force-Algorithmus bereits mehrere Stellen ausprobieren, da es mehr Karten als Bits gibt.
 \subsection*{stapel4.txt}
-Dieses Beispiel wird vom ISD-Algorithmus ebenfalls in sehr kurzer Zeit gelöst:
+Dieses Beispiel wird vom ISD-Algorithmus auch in sehr kurzer Zeit gelöst:
 \lstinputlisting{Ausgaben/stapel4_isd.txt}
 In diesem Fall hat der Algorithmus 13 Versuche gebraucht, bis eine Lösung gefunden wurde. Nach der theoretischen Analyse unter \ref{sec:runtime} beträgt der Erwartungswert für die Anzahl der Versuche bei diesem Beispiel 10. Zumindest in der Größenordnung stimmt die Analyse also mit der Praxis überein. 
 Die Ausgabe des Brute-Force-Algorithmus ist
@@ -269,13 +265,28 @@ Das Beispiel \lstinline{stapelc0.txt} wurde mit dem \lstinline{beispielgenerator
 Der Beispielgenerator gibt zusätzlich zur Eingabedatei die verwendeten Öffnungskarten aus und die Ausgabe stimmt damit überein. 
 Der theoretisch ermittelte Erwartungswert für die Anzahl der Versuche ist bei diesem Beispiel etwa 2300, sodass die Größenordnung auch hier mit der Theorie übereinstimmt. Die tatsächlich benötigte Anzahl an Versuchen schwankt jedoch -- wie zu erwarten -- stark.
 
-Dieses Beispiel zeigt aber auch die Grenzen des Verfahrens auf: noch deutlich größere Instanzen wären aufgrund der exponentiellen Laufzeit nicht mehr lösbar. Etwas größere Beispiele könnten gelöst werden, wenn größere Werte für $p$ oder einer der weiterentwickelten Algorithmen verwendet würde.
-Noch größere Instanzen dieses Problems werden aktuell als so schwierig angesehen, dass sie als Grundlage für kryptografische Verfahren verwendet werden. \citeauthor{bernsteinAttackingDefendingMcEliece2008} empfehlen beispielsweise zugrundeliegende Codes, die in diesem Kontext 1632 Karten mit 1269 Bits und 33 Öffnungskarten entsprechen würden, um ein McElice-Kryptosystem mit einem Sicherheitsniveau von 80-Bits zu erhalten. \cite{bernsteinAttackingDefendingMcEliece2008}
+Dieses Beispiel zeigt aber auch die Grenzen des Verfahrens auf: noch deutlich schwierigere Instanzen wären aufgrund der exponentiellen Laufzeit nicht mehr lösbar. Etwas schwierigere Beispiele könnten gelöst werden, wenn größere Werte für $p$ oder einer der weiterentwickelten Algorithmen verwendet würde.
+
+Wie bereits beschrieben bedeutet schwierig aber nicht unbedingt, dass $n$, $m$ und $k$ groß sind. 
+Das neu generierte Beispiel \lstinline{stapelc1.txt} hat $n = 2500$, $m = 2480$ und $k = 20$. 
+Da die Differenz von $n$ und $m$ relativ gering ist, können beide Verfahren auch dieses Beispiel in vergleichsweise kurzer Zeit lösen. Hier die Ausgabe des ISD-Algorithmus:
+\lstinputlisting{Ausgaben/stapelc1_isd.txt}
+Die Ausgabe des Brute-Force-Algorithmus ist ebenfalls korrekt und im Zip-Ordner zu finden.
+
+Noch schwierigere Instanzen dieses Problems werden aktuell als so schwierig angesehen, dass sie als Grundlage für kryptografische Verfahren verwendet werden. \citeauthor{bernsteinAttackingDefendingMcEliece2008} empfehlen beispielsweise zugrundeliegende Codes, die in diesem Kontext 1632 Karten mit 1269 Bits und 33 Öffnungskarten entsprechen würden, um ein McEliece-Kryptosystem mit einem Sicherheitsniveau von 80 Bits zu erhalten. \cite{bernsteinAttackingDefendingMcEliece2008}
 Der Algorithmus schneidet also schon vergleichsweise gut ab, auch wenn es noch Verbesserungspotential gibt.
+
 \section{Quellcode}
 
+\lstinputlisting[title=\texttt{ISDSolver.h}]{../4_Stapel/ISDSolver.h}
+\lstinputlisting[title=\texttt{ISDSolver.cpp}]{../4_Stapel/ISDSolver.cpp}
 
+\lstinputlisting[title=\texttt{BruteforceSolver.h}]{../4_Stapel/BruteforceSolver.h}
+\lstinputlisting[title=\texttt{BruteforceSolver.cpp}]{../4_Stapel/BruteforceSolver.cpp}
 
+\lstinputlisting[title=\texttt{Utils.cpp}]{../4_Stapel/Utils.cpp}
+
+ 
 \printbibliography[heading=bibintoc]
 
 \end{document}

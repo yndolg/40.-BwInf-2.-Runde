@@ -1,7 +1,3 @@
-//
-// Created by niels on 28.02.22.
-//
-
 #ifndef STAPEL_BRUTEFORCESOLVER_H
 #define STAPEL_BRUTEFORCESOLVER_H
 
@@ -13,6 +9,7 @@
 #include <omp.h>
 #include <algorithm>
 #include <cmath>
+
 #include "Utils.h"
 
 using namespace std;
@@ -46,12 +43,14 @@ class BruteforceSolver {
         //                       gehabt und kann resubstituiert werden
         while (col >= 0 && row_of_var[col] >= 0 && c >= 0 && c <= col + 1) {
 
-            // Der Wert dieser Spalte wird aus den bereits substituierten Spalten berechnet, die Summe
-            // der bisher substituierten Variablen, skalar multipliziert mit der Zeile, in der das
-            // Pivotelement dieser Variable ist.
+            // Der Wert dieser Spalte wird aus den bereits substituierten
+            // Spalten berechnet, die Summe der bisher substituierten Variablen,
+            // skalar multipliziert mit der Zeile, in der das Pivotelement dieser
+            // Variable ist.
             bool v = (row_bitsets[row_of_var[col]] & codeword).count() % 2;
 
-            // Wenn die Variable auf 1 gesetzt wurde, muss die Spalte zum aktuellen Syndrom hinzugefügt werden
+            // Wenn die Variable auf 1 gesetzt wurde, muss die Spalte zum aktuellen
+            // Syndrom hinzugefügt werden
             if (v) {
                 codeword[col] = 1;
                 syndrome ^= cols_bitsets[col];
@@ -60,7 +59,8 @@ class BruteforceSolver {
             col--;
         }
 
-        // Abbrechen, wenn es nicht mehr genug Spalten gibt, um das Zielgewicht zu erreichen
+        // Abbrechen, wenn es nicht mehr genug Spalten gibt, um das Zielgewicht
+        // zu erreichen
         if (c > col + 1) {
             printProgress(codeword);
             return;

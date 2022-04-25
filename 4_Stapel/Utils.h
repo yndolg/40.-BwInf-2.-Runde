@@ -1,7 +1,3 @@
-//
-// Created by niels on 11.04.22.
-//
-
 #ifndef STAPEL_UTILS_H
 #define STAPEL_UTILS_H
 
@@ -11,7 +7,7 @@
 
 class Utils {
 public:
-    struct Instance{
+    struct Instance {
         std::vector<std::vector<int>> H;
         int k;
     };
@@ -26,9 +22,9 @@ public:
         return r;
     }
 
-    static void gauss(std::vector<std::vector<int>>& matrix);
+    static void gauss(std::vector<std::vector<int>> &matrix);
 
-    static Instance readInstanceFromFile(std::ifstream& ifs);
+    static Instance readInstanceFromFile(std::ifstream &ifs);
 
     static std::vector<std::vector<int>> transpose(std::vector<std::vector<int>>);
 

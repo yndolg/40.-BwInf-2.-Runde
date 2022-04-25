@@ -1,3 +1,4 @@
+$ ./stapel isd ../Eingabe/stapelc0.txt
 Lösungsverfahren: Information-Set-Decoding
 Die richtigen Karten wurden gefunden:
  Karte  58 (1010010010010000100010111100100110001010100010000100111011111100...)

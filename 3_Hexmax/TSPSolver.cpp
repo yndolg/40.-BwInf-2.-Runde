@@ -1,7 +1,3 @@
-//
-// Created by niels on 18.04.22.
-//
-
 #include <iostream>
 #include <algorithm>
 #include <iomanip>

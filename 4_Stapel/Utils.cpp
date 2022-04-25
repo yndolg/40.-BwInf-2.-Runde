@@ -1,22 +1,14 @@
-//
-// Created by niels on 11.04.22.
-//
-
-#include "BruteforceSolver.h"
 #include <bitset>
-#include <omp.h>
-#include <chrono>
 #include <iostream>
 #include <vector>
-#include "Utils.h"
 #include <algorithm>
-#include <functional>
 #include <fstream>
+
+#include "Utils.h"
 
 using namespace std;
 
-
-void Utils::gauss(std::vector<std::vector<int>>& matrix) {
+void Utils::gauss(std::vector<std::vector<int>> &matrix) {
     int h = 0;
     int k = 0;
 
@@ -31,9 +23,9 @@ void Utils::gauss(std::vector<std::vector<int>>& matrix) {
         } else {
             swap(matrix[h], matrix[i_max]);
             for (int i = h + 1; i < matrix.size(); i++) {
-                if(matrix[i][k]){
+                if (matrix[i][k]) {
                     for (int j = k; j < matrix[0].size(); j++) {
-                        matrix[i][j] ^=  matrix[h][j];
+                        matrix[i][j] ^= matrix[h][j];
                     }
                 }
             }
@@ -43,25 +35,26 @@ void Utils::gauss(std::vector<std::vector<int>>& matrix) {
     }
 
     // 0-Zeilen entfernen
-    matrix.erase(std::remove_if(matrix.begin(), matrix.end(), [](auto el){
+    matrix.erase(std::remove_if(matrix.begin(), matrix.end(), [](auto el) {
         return std::count(el.begin(), el.end(), 1) == 0;
     }), matrix.end());
 
 
     // In reduzierte Spaltenform bringen
-    for(int row = matrix.size() - 1; row >= 0; row--){
+    for (int row = matrix.size() - 1; row >= 0; row--) {
         auto leading_one = std::distance(matrix[row].begin(), std::find(matrix[row].begin(), matrix[row].end(), 1));
 
         // diese Zeile von allen darüberliegenden Zeilen entfernen, wenn diese eine 1 an der entsprechenden Stelle haben
-        for(int i = 0; i < row; i++){ // n times --> O(nm)
-            if(matrix[i][leading_one]){
-                std::transform(matrix[i].begin(), matrix[i].end(), matrix[row].begin(), matrix[i].begin(), std::bit_xor<>());
+        for (int i = 0; i < row; i++) { // n times --> O(nm)
+            if (matrix[i][leading_one]) {
+                std::transform(matrix[i].begin(), matrix[i].end(), matrix[row].begin(), matrix[i].begin(),
+                               std::bit_xor<>());
             }
         }
     }
 }
 
- Utils::Instance Utils::readInstanceFromFile(std::ifstream& ifs) {
+Utils::Instance Utils::readInstanceFromFile(std::ifstream &ifs) {
     int n, k, m;
 
     ifs >> n;
@@ -78,7 +71,7 @@ void Utils::gauss(std::vector<std::vector<int>>& matrix) {
         }
         cards.push_back(card);
     }
-    return Instance{cards, k };
+    return Instance{cards, k};
 }
 
 std::vector<std::vector<int>> Utils::transpose(std::vector<std::vector<int>> mat) {

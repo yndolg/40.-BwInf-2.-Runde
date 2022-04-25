@@ -1,12 +1,9 @@
-//
-// Created by niels on 11.04.22.
-//
-
 #ifndef STAPEL_ISDSOLVER_H
 #define STAPEL_ISDSOLVER_H
 
 #include <vector>
 #include <random>
+
 #include "Utils.h"
 
 class ISDSolver {
