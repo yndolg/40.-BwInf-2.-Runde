@@ -322,11 +322,9 @@ Eine Position ist dabei ebenfalls ein Paar, der erste Wert gibt die Stelle und d
 Zum Compilieren des Codes wird ein \texttt{C++-17}-fähiger Compiler benötigt.
 Als Build-System wird CMake verwendet, der Code kann wie üblich über 
 \begin{lstlisting}[language=bash]
-    mkdir build
-    cd build
-    cmake ..
-    cmake --build . 
-\end{lstlisting}    
+    cmake -S . -B build -D CMAKE_BUILD_TYPE=Release
+    cmake --build build
+    \end{lstlisting}  
 kompiliert und dann mit \lstinline[language=bash]{./hexmax [-v <Algorithmus>] <Dateipfad>} ausgeführt werden. Der Pfad sollte auf die zu lösende Eingabedatei zeigen. Mit dem optionalen Parameter \lstinline[language=bash]{-v <Algorithmus>} kann angegeben werden, dass die genauen Umlegungen berechnet werden sollen und mit welchem Algorithmus. Möglich sind \lstinline[language=bash]{greedy} für Algorithmus \ref{alg:moves} und \lstinline[language=bash]{kurz} für den evolutionären Algorithmus. Der Code wurde unter Ubuntu 20.04. getestet. 
 
 \subsection{Erweiterung: Kurze Wege beim Umlegen}

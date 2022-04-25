@@ -1,0 +1,19 @@
+$ ./hexmax -v greedy ../Eingabe/hexmax0.txt
+Die größtmögliche Hex-Zahl ist 
+  EE4.
+Umlegungen, um zu dieser Hex-Zahl zu gelangen: 
+   ╻ ╺━┓ ╻ ╻
+ ┏━┫ ┏━┛ ┗━┫
+ ┗━┛ ┗━╸   ╹
+  ┃         
+ ╻ ╻ ╺━┓ ╻ ╻
+ ┣━┛ ┏━┛ ┗━┫
+ ┗━╸ ┗━╸   ╹
+  ┃         
+ ┏━╸ ╺━┓ ╻ ╻
+ ┣━╸ ┏━┛ ┗━┫
+ ┗━╸ ┗━╸   ╹
+      ┃     
+ ┏━╸ ┏━╸ ╻ ╻
+ ┣━╸ ┣━╸ ┗━┫
+ ┗━╸ ┗━╸   ╹
